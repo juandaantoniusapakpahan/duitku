@@ -1,0 +1,8 @@
+package com.duitku.app.finance.report.dto;
+
+import com.duitku.app.finance.transaction.dto.CategoryRef;
+
+import java.math.BigDecimal;
+
+public record CategoryAmount(CategoryRef category, BigDecimal amount, BigDecimal pct) {
+}

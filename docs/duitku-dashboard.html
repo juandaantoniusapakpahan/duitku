@@ -1,0 +1,2932 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duitku — Personal Finance</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: {
+        brand: {
+          50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+          400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+          800: '#5b21b6', 900: '#4c1d95'
+        },
+        ink: {
+          50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1',
+          400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155',
+          800: '#1e293b', 900: '#0f172a'
+        }
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .page { animation: fadeIn 0.25s ease-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card-hover { transition: all 0.2s ease; }
+  .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+  .nav-item { transition: all 0.15s ease; }
+  .glass { backdrop-filter: blur(12px); background: rgba(255,255,255,0.85); }
+</style>
+</head>
+<body class="bg-ink-50 text-ink-900 antialiased min-h-screen">
+
+<!-- ============ AUTH PAGES (Login / Register) ============ -->
+<div id="authShell" class="hidden fixed inset-0 z-40 bg-white overflow-y-auto">
+
+  <!-- Login Page -->
+  <div id="auth-login" class="min-h-screen grid lg:grid-cols-2">
+    <!-- Form Side -->
+    <div class="flex flex-col p-6 sm:p-10 lg:p-14">
+      <!-- Logo -->
+      <div class="flex items-center gap-2.5 mb-12">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+          <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+        </div>
+        <span class="font-semibold text-lg">Duitku</span>
+      </div>
+
+      <div class="max-w-sm w-full mx-auto flex-1 flex flex-col justify-center py-8">
+        <div class="mb-8">
+          <h1 class="text-3xl font-semibold tracking-tight mb-2">Selamat datang kembali</h1>
+          <p class="text-sm text-ink-500">Login ke akun Duitku kamu untuk lanjut kelola keuangan</p>
+        </div>
+
+        <!-- OAuth -->
+        <button class="w-full inline-flex items-center justify-center gap-3 py-2.5 bg-ink-900 hover:bg-ink-800 text-white rounded-xl text-sm font-medium transition mb-6">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.04-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.09 1.85 1.24 1.85 1.24 1.07 1.84 2.82 1.31 3.51 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.01 2.9-.01 3.29 0 .32.22.7.83.58C20.57 22.29 24 17.8 24 12.5 24 5.87 18.63.5 12 .5z"/></svg>
+          Lanjutkan dengan GitHub
+        </button>
+
+        <div class="flex items-center gap-3 my-6">
+          <div class="flex-1 h-px bg-ink-200"></div>
+          <span class="text-xs text-ink-500">atau</span>
+          <div class="flex-1 h-px bg-ink-200"></div>
+        </div>
+
+        <form class="space-y-4" onsubmit="event.preventDefault(); hideAuth();">
+          <div>
+            <label class="text-sm font-medium block mb-1.5">Email</label>
+            <input type="email" placeholder="kamu@email.com" value="juadev@gmail.com" class="w-full px-4 py-2.5 border border-ink-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none text-sm transition">
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-sm font-medium">Password</label>
+              <a class="text-xs text-brand-600 hover:text-brand-700 font-medium cursor-pointer">Lupa password?</a>
+            </div>
+            <div class="relative">
+              <input id="loginPassword" type="password" placeholder="Masukkan password" value="password123" class="w-full px-4 py-2.5 pr-10 border border-ink-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none text-sm transition">
+              <button type="button" onclick="togglePw('loginPassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked class="w-4 h-4 rounded border-ink-300 text-brand-600 focus:ring-brand-500">
+            <span class="text-sm text-ink-600">Ingat saya 30 hari</span>
+          </label>
+
+          <button type="submit" class="w-full py-2.5 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm">
+            Login
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-ink-500 mt-6">
+          Belum punya akun?
+          <a onclick="switchAuth('register')" class="text-brand-600 hover:text-brand-700 font-medium cursor-pointer">Daftar sekarang</a>
+        </p>
+      </div>
+
+      <p class="text-center text-[11px] text-ink-400 mt-8">
+        &copy; 2026 Duitku · <a class="hover:text-ink-600 cursor-pointer">Syarat & Ketentuan</a> · <a class="hover:text-ink-600 cursor-pointer">Privasi</a>
+      </p>
+    </div>
+
+    <!-- Brand Side -->
+    <div class="hidden lg:flex relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 p-14 flex-col justify-between text-white">
+      <div class="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+
+      <div class="relative">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur border border-white/20 text-xs mb-8">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+          Beta v1.0 — free selamanya buat personal use
+        </div>
+
+        <h2 class="text-4xl font-semibold tracking-tight leading-tight mb-4">
+          Kelola keuangan pribadi<br>
+          <span class="text-brand-200">yang beneran kepakai</span>
+        </h2>
+        <p class="text-brand-100 text-base leading-relaxed max-w-md">Tracking pengeluaran, budget, investasi, sampai fee bank — semua di satu tempat, tanpa ribet.</p>
+      </div>
+
+      <!-- Feature Cards -->
+      <div class="relative space-y-3">
+        <div class="p-4 bg-white/10 backdrop-blur rounded-xl border border-white/10 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="chart-line" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium">Dashboard cerdas</p>
+            <p class="text-xs text-brand-200">Tau kondisi keuangan dalam 3 detik</p>
+          </div>
+        </div>
+        <div class="p-4 bg-white/10 backdrop-blur rounded-xl border border-white/10 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="target" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium">Budget per kategori</p>
+            <p class="text-xs text-brand-200">Set target, tracking otomatis, alert kalau over</p>
+          </div>
+        </div>
+        <div class="p-4 bg-white/10 backdrop-blur rounded-xl border border-white/10 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium">Data 100% milik kamu</p>
+            <p class="text-xs text-brand-200">Ga ada iklan, ga jualan data, ga judgy</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Page -->
+  <div id="auth-register" class="hidden min-h-screen grid lg:grid-cols-2">
+    <!-- Form Side -->
+    <div class="flex flex-col p-6 sm:p-10 lg:p-14">
+      <div class="flex items-center gap-2.5 mb-12">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+          <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+        </div>
+        <span class="font-semibold text-lg">Duitku</span>
+      </div>
+
+      <div class="max-w-sm w-full mx-auto flex-1 flex flex-col justify-center py-8">
+        <div class="mb-8">
+          <h1 class="text-3xl font-semibold tracking-tight mb-2">Buat akun baru</h1>
+          <p class="text-sm text-ink-500">Gratis selamanya. Ga perlu kartu kredit.</p>
+        </div>
+
+        <button class="w-full inline-flex items-center justify-center gap-3 py-2.5 bg-ink-900 hover:bg-ink-800 text-white rounded-xl text-sm font-medium transition mb-6">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.04-.02-2.05-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.09 1.85 1.24 1.85 1.24 1.07 1.84 2.82 1.31 3.51 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.81 1.1.81 2.22 0 1.61-.01 2.9-.01 3.29 0 .32.22.7.83.58C20.57 22.29 24 17.8 24 12.5 24 5.87 18.63.5 12 .5z"/></svg>
+          Daftar dengan GitHub
+        </button>
+
+        <div class="flex items-center gap-3 mb-6">
+          <div class="flex-1 h-px bg-ink-200"></div>
+          <span class="text-xs text-ink-500">atau isi manual</span>
+          <div class="flex-1 h-px bg-ink-200"></div>
+        </div>
+
+        <form class="space-y-4" onsubmit="event.preventDefault(); hideAuth();">
+          <div>
+            <label class="text-sm font-medium block mb-1.5">Nama lengkap</label>
+            <input type="text" placeholder="Raraku" class="w-full px-4 py-2.5 border border-ink-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none text-sm transition">
+          </div>
+          <div>
+            <label class="text-sm font-medium block mb-1.5">Email</label>
+            <input type="email" placeholder="kamu@email.com" class="w-full px-4 py-2.5 border border-ink-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none text-sm transition">
+          </div>
+          <div>
+            <label class="text-sm font-medium block mb-1.5">Password</label>
+            <div class="relative">
+              <input id="regPassword" type="password" placeholder="Minimal 8 karakter" class="w-full px-4 py-2.5 pr-10 border border-ink-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none text-sm transition">
+              <button type="button" onclick="togglePw('regPassword', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <!-- Password strength -->
+            <div class="mt-2">
+              <div class="flex items-center gap-1">
+                <div class="flex-1 h-1 rounded-full bg-emerald-500"></div>
+                <div class="flex-1 h-1 rounded-full bg-emerald-500"></div>
+                <div class="flex-1 h-1 rounded-full bg-emerald-500"></div>
+                <div class="flex-1 h-1 rounded-full bg-ink-200"></div>
+              </div>
+              <p class="text-[11px] text-ink-500 mt-1">Kuat · tambahkan angka biar lebih kuat</p>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-medium block mb-1.5">Konfirmasi password</label>
+            <input type="password" placeholder="Ulangi password" class="w-full px-4 py-2.5 border border-ink-200 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none text-sm transition">
+          </div>
+
+          <label class="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" class="w-4 h-4 mt-0.5 rounded border-ink-300 text-brand-600 focus:ring-brand-500">
+            <span class="text-xs text-ink-600 leading-relaxed">Saya setuju dengan <a class="text-brand-600 hover:underline">Syarat & Ketentuan</a> dan <a class="text-brand-600 hover:underline">Kebijakan Privasi</a></span>
+          </label>
+
+          <button type="submit" class="w-full py-2.5 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm">
+            Buat akun
+          </button>
+        </form>
+
+        <p class="text-center text-sm text-ink-500 mt-6">
+          Sudah punya akun?
+          <a onclick="switchAuth('login')" class="text-brand-600 hover:text-brand-700 font-medium cursor-pointer">Login</a>
+        </p>
+      </div>
+
+      <p class="text-center text-[11px] text-ink-400 mt-8">
+        &copy; 2026 Duitku · <a class="hover:text-ink-600 cursor-pointer">Syarat & Ketentuan</a> · <a class="hover:text-ink-600 cursor-pointer">Privasi</a>
+      </p>
+    </div>
+
+    <!-- Brand Side -->
+    <div class="hidden lg:flex relative overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 p-14 flex-col justify-between text-white">
+      <div class="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+
+      <div class="relative">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-400/20 backdrop-blur border border-emerald-300/30 text-xs text-emerald-100 mb-8">
+          <i data-lucide="gift" class="w-3 h-3"></i>
+          100% gratis buat personal use
+        </div>
+
+        <h2 class="text-4xl font-semibold tracking-tight leading-tight mb-4">
+          Mulai atur uangmu<br>
+          <span class="text-brand-200">dalam 2 menit</span>
+        </h2>
+        <p class="text-brand-100 text-base leading-relaxed max-w-md">Import transaksi, set budget, catat investasi — semua langsung siap pakai begitu daftar.</p>
+      </div>
+
+      <!-- Testimonial -->
+      <div class="relative">
+        <div class="p-5 bg-white/10 backdrop-blur rounded-2xl border border-white/10">
+          <div class="flex items-center gap-1 mb-3">
+            <i data-lucide="star" class="w-4 h-4 fill-amber-300 text-amber-300"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-300 text-amber-300"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-300 text-amber-300"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-300 text-amber-300"></i>
+            <i data-lucide="star" class="w-4 h-4 fill-amber-300 text-amber-300"></i>
+          </div>
+          <p class="text-sm leading-relaxed mb-4">"Akhirnya app finance yang ga maksa aku beli premium. Dashboard-nya bersih, tracking investasi juga masuk. Recommended."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center font-medium text-sm">DR</div>
+            <div>
+              <p class="text-sm font-medium">Dinda R.</p>
+              <p class="text-xs text-brand-200">Product Designer</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Layout Shell -->
+<div class="flex min-h-screen">
+
+  <!-- Sidebar (Desktop/Tablet) -->
+  <aside class="hidden md:flex md:w-16 lg:w-60 flex-col border-r border-ink-200 bg-white sticky top-0 h-screen">
+    <div class="flex items-center gap-2.5 px-4 lg:px-5 h-16 border-b border-ink-200">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="wallet" class="w-4 h-4 text-white"></i>
+      </div>
+      <span class="hidden lg:block font-semibold text-[15px] tracking-tight">Duitku</span>
+    </div>
+
+    <nav class="flex-1 px-2 lg:px-3 py-4 space-y-0.5">
+      <button onclick="showPage('dashboard')" data-nav="dashboard" class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium">
+        <i data-lucide="layout-dashboard" class="w-[18px] h-[18px] flex-shrink-0"></i>
+        <span class="hidden lg:block">Dashboard</span>
+      </button>
+      <button onclick="showPage('transactions')" data-nav="transactions" class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium">
+        <i data-lucide="arrow-left-right" class="w-[18px] h-[18px] flex-shrink-0"></i>
+        <span class="hidden lg:block">Transaksi</span>
+      </button>
+      <button onclick="showPage('accounts')" data-nav="accounts" class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:bg-ink-100">
+        <i data-lucide="credit-card" class="w-[18px] h-[18px] flex-shrink-0"></i>
+        <span class="hidden lg:block">Akun</span>
+      </button>
+      <button class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:bg-ink-100">
+        <i data-lucide="shapes" class="w-[18px] h-[18px] flex-shrink-0"></i>
+        <span class="hidden lg:block">Kategori</span>
+      </button>
+      <button onclick="showPage('budget')" data-nav="budget" class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:bg-ink-100">
+        <i data-lucide="target" class="w-[18px] h-[18px] flex-shrink-0"></i>
+        <span class="hidden lg:block">Budget</span>
+      </button>
+      <button onclick="showPage('reports')" data-nav="reports" class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:bg-ink-100">
+        <i data-lucide="chart-line" class="w-[18px] h-[18px] flex-shrink-0"></i>
+        <span class="hidden lg:block">Laporan</span>
+      </button>
+
+      <div class="pt-4 mt-4 border-t border-ink-200">
+        <p class="hidden lg:block px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-ink-400">Modul</p>
+        <button class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:bg-ink-100">
+          <i data-lucide="activity" class="w-[18px] h-[18px] flex-shrink-0"></i>
+          <span class="hidden lg:block">Activity Tracker</span>
+        </button>
+        <button class="nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium text-ink-400 hover:bg-ink-100">
+          <i data-lucide="plus" class="w-[18px] h-[18px] flex-shrink-0"></i>
+          <span class="hidden lg:block">Tambah modul</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="p-3 border-t border-ink-200">
+      <div onclick="showAuth('login')" class="hidden lg:flex items-center gap-3 p-2 rounded-lg hover:bg-ink-100 cursor-pointer" title="Sign out (preview login page)">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold">RA</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium truncate">Raraku</p>
+          <p class="text-xs text-ink-500 truncate">juadev@gmail.com</p>
+        </div>
+        <i data-lucide="log-out" class="w-4 h-4 text-ink-400"></i>
+      </div>
+      <div onclick="showAuth('login')" class="lg:hidden flex justify-center cursor-pointer">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold">RA</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
+
+    <!-- Top Bar (Mobile) -->
+    <header class="md:hidden sticky top-0 z-30 glass border-b border-ink-200">
+      <div class="flex items-center justify-between px-4 h-14">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+            <i data-lucide="wallet" class="w-4 h-4 text-white"></i>
+          </div>
+          <span class="font-semibold text-[15px]">Duitku</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="w-9 h-9 rounded-full hover:bg-ink-100 flex items-center justify-center relative">
+            <i data-lucide="bell" class="w-[18px] h-[18px] text-ink-600"></i>
+            <span class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-red-500"></span>
+          </button>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold">RA</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Top Bar (Desktop) -->
+    <header class="hidden md:flex sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-ink-200 items-center justify-between px-6 lg:px-8 h-16">
+      <div class="flex items-center gap-3 flex-1 max-w-md">
+        <div class="relative w-full">
+          <i data-lucide="search" class="w-4 h-4 text-ink-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" placeholder="Cari transaksi, kategori..." class="w-full pl-9 pr-3 py-2 text-sm bg-ink-100 border-0 rounded-lg focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition">
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="w-9 h-9 rounded-lg hover:bg-ink-100 flex items-center justify-center">
+          <i data-lucide="moon" class="w-[18px] h-[18px] text-ink-600"></i>
+        </button>
+        <button class="w-9 h-9 rounded-lg hover:bg-ink-100 flex items-center justify-center relative">
+          <i data-lucide="bell" class="w-[18px] h-[18px] text-ink-600"></i>
+          <span class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-red-500"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-auto">
+
+      <!-- DASHBOARD PAGE -->
+      <div id="page-dashboard" class="page">
+        <div class="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+
+          <!-- Greeting + CTA -->
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">Halo, Raraku 👋</h1>
+              <p class="text-sm text-ink-500 mt-1">Sabtu, 25 Juli 2026 · Kondisi keuanganmu sehat</p>
+            </div>
+            <button onclick="openTxModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              Tambah transaksi
+            </button>
+          </div>
+
+          <!-- Hero Net Worth Card -->
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 p-6 lg:p-8 text-white">
+            <div class="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-white/5 rounded-full blur-3xl"></div>
+            <div class="relative">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <p class="text-sm text-brand-200 mb-1">Total kekayaan bersih</p>
+                  <div class="flex items-baseline gap-2">
+                    <h2 class="text-3xl lg:text-4xl font-semibold tracking-tight">Rp 34.850.000</h2>
+                    <button class="text-brand-200 hover:text-white transition"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                  </div>
+                </div>
+                <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full backdrop-blur">
+                  <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-300"></i>
+                  <span class="text-xs font-medium">+12,4%</span>
+                </div>
+              </div>
+
+              <!-- Cash vs Investasi Breakdown -->
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="p-3 rounded-xl bg-white/10 backdrop-blur border border-white/10">
+                  <div class="flex items-center gap-1.5 mb-1.5">
+                    <i data-lucide="wallet" class="w-3.5 h-3.5 text-brand-200"></i>
+                    <p class="text-xs text-brand-200">Cash & Bank</p>
+                  </div>
+                  <p class="text-base lg:text-xl font-semibold">Rp 24.850.000</p>
+                  <p class="text-[11px] text-brand-200 mt-1">71% dari total</p>
+                </div>
+                <div class="p-3 rounded-xl bg-white/10 backdrop-blur border border-white/10">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-1.5">
+                      <i data-lucide="chart-line" class="w-3.5 h-3.5 text-brand-200"></i>
+                      <p class="text-xs text-brand-200">Investasi</p>
+                    </div>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 font-medium">+8,2%</span>
+                  </div>
+                  <p class="text-base lg:text-xl font-semibold">Rp 10.000.000</p>
+                  <p class="text-[11px] text-brand-200 mt-1">29% · +Rp 760k</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-3 lg:gap-6 pt-4 border-t border-white/10">
+                <div>
+                  <div class="flex items-center gap-1.5 mb-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-emerald-400/20 flex items-center justify-center">
+                      <i data-lucide="arrow-down-left" class="w-3.5 h-3.5 text-emerald-300"></i>
+                    </div>
+                    <p class="text-xs text-brand-200">Pemasukan</p>
+                  </div>
+                  <p class="text-sm lg:text-lg font-semibold">Rp 8.500.000</p>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5 mb-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-rose-400/20 flex items-center justify-center">
+                      <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-rose-300"></i>
+                    </div>
+                    <p class="text-xs text-brand-200">Pengeluaran</p>
+                  </div>
+                  <p class="text-sm lg:text-lg font-semibold">Rp 3.240.000</p>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5 mb-1.5">
+                    <div class="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center">
+                      <i data-lucide="piggy-bank" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <p class="text-xs text-brand-200">Tabungan</p>
+                  </div>
+                  <p class="text-sm lg:text-lg font-semibold">Rp 5.260.000</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Cashflow Chart -->
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <h3 class="text-base font-semibold">Cashflow</h3>
+                  <p class="text-xs text-ink-500 mt-0.5">6 bulan terakhir</p>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-500"></span>Masuk</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-ink-300"></span>Keluar</span>
+                </div>
+              </div>
+              <div class="h-52">
+                <canvas id="cashflowChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Top Categories -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h3 class="text-base font-semibold">Kategori</h3>
+                  <p class="text-xs text-ink-500 mt-0.5">Bulan ini</p>
+                </div>
+                <button class="text-ink-400 hover:text-ink-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                        <i data-lucide="utensils" class="w-4 h-4 text-orange-600"></i>
+                      </div>
+                      <span class="text-sm font-medium">Makanan</span>
+                    </div>
+                    <span class="text-sm font-semibold">Rp 980k</span>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-orange-500 rounded-full" style="width: 78%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center">
+                        <i data-lucide="car" class="w-4 h-4 text-brand-600"></i>
+                      </div>
+                      <span class="text-sm font-medium">Transport</span>
+                    </div>
+                    <span class="text-sm font-semibold">Rp 620k</span>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-brand-500 rounded-full" style="width: 50%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-emerald-600"></i>
+                      </div>
+                      <span class="text-sm font-medium">Belanja</span>
+                    </div>
+                    <span class="text-sm font-semibold">Rp 480k</span>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-emerald-500 rounded-full" style="width: 38%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center">
+                        <i data-lucide="film" class="w-4 h-4 text-pink-600"></i>
+                      </div>
+                      <span class="text-sm font-medium">Hiburan</span>
+                    </div>
+                    <span class="text-sm font-semibold">Rp 320k</span>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-pink-500 rounded-full" style="width: 25%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accounts + Recent Transactions -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Accounts -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="text-base font-semibold">Akun</h3>
+                <button class="text-xs font-medium text-brand-600 hover:text-brand-700">+ Tambah</button>
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <i data-lucide="landmark" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium">BCA</p>
+                      <p class="text-xs text-ink-500">Bank</p>
+                    </div>
+                  </div>
+                  <p class="text-sm font-semibold">Rp 15.2M</p>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                      <i data-lucide="landmark" class="w-5 h-5 text-yellow-600"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium">Mandiri</p>
+                      <p class="text-xs text-ink-500">Bank</p>
+                    </div>
+                  </div>
+                  <p class="text-sm font-semibold">Rp 8.4M</p>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                      <i data-lucide="smartphone" class="w-5 h-5 text-emerald-600"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium">GoPay</p>
+                      <p class="text-xs text-ink-500">E-wallet</p>
+                    </div>
+                  </div>
+                  <p class="text-sm font-semibold">Rp 850k</p>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-ink-100 flex items-center justify-center">
+                      <i data-lucide="banknote" class="w-5 h-5 text-ink-600"></i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium">Cash</p>
+                      <p class="text-xs text-ink-500">Tunai</p>
+                    </div>
+                  </div>
+                  <p class="text-sm font-semibold">Rp 400k</p>
+                </div>
+
+                <div class="pt-3 mt-1 border-t border-ink-100">
+                  <p class="px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-ink-400">Investasi</p>
+                  <div class="flex items-center justify-between p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center">
+                        <i data-lucide="chart-line" class="w-5 h-5 text-brand-600"></i>
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium">Reksadana BNP</p>
+                        <div class="flex items-center gap-1.5">
+                          <p class="text-xs text-ink-500">Modal Rp 7.4M</p>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium">+8,1%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 8.0M</p>
+                      <p class="text-xs text-emerald-600">+Rp 600k</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                        <i data-lucide="bitcoin" class="w-5 h-5 text-amber-600"></i>
+                      </div>
+                      <div>
+                        <p class="text-sm font-medium">Crypto</p>
+                        <div class="flex items-center gap-1.5">
+                          <p class="text-xs text-ink-500">Modal Rp 1.8M</p>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium">+11,1%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 2.0M</p>
+                      <p class="text-xs text-emerald-600">+Rp 200k</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h3 class="text-base font-semibold">Transaksi terbaru</h3>
+                  <p class="text-xs text-ink-500 mt-0.5">5 transaksi terakhir</p>
+                </div>
+                <button onclick="showPage('transactions')" class="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                  Semua transaksi <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </button>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="utensils" class="w-5 h-5 text-orange-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Makan siang di Warteg</p>
+                    <p class="text-xs text-ink-500">Makanan · BCA · hari ini, 12:30</p>
+                  </div>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 45.000</p>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="wallet" class="w-5 h-5 text-emerald-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Gaji Juli 2026</p>
+                    <p class="text-xs text-ink-500">Gaji · Mandiri · kemarin</p>
+                  </div>
+                  <p class="text-sm font-semibold text-emerald-600">+ Rp 8.500.000</p>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="fuel" class="w-5 h-5 text-brand-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Bensin Pertamax</p>
+                    <p class="text-xs text-ink-500">Transport · GoPay · 2 hari lalu</p>
+                  </div>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 150.000</p>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-pink-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Belanja Shopee</p>
+                    <p class="text-xs text-ink-500">Belanja · ShopeePay · 3 hari lalu</p>
+                  </div>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 285.000</p>
+                </div>
+                <div class="flex items-center gap-3 p-3 rounded-xl hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="coffee" class="w-5 h-5 text-cyan-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Kopi Kenangan</p>
+                    <p class="text-xs text-ink-500">Makanan · BCA · 3 hari lalu</p>
+                  </div>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 22.000</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS PAGE -->
+      <div id="page-transactions" class="page hidden">
+        <div class="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">Transaksi</h1>
+              <p class="text-sm text-ink-500 mt-1">142 transaksi bulan Juli 2026</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="inline-flex items-center gap-2 px-3 py-2 border border-ink-200 hover:bg-ink-100 text-sm font-medium rounded-xl transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Export</span>
+              </button>
+              <button onclick="openTxModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Tambah
+              </button>
+            </div>
+          </div>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <i data-lucide="arrow-down-left" class="w-3.5 h-3.5 text-emerald-600"></i>
+                </div>
+                <span class="text-xs text-ink-500">Pemasukan</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 8.5M</p>
+              <p class="text-xs text-emerald-600 mt-0.5">+8% dari bulan lalu</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center">
+                  <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-rose-600"></i>
+                </div>
+                <span class="text-xs text-ink-500">Pengeluaran</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 3.24M</p>
+              <p class="text-xs text-rose-600 mt-0.5">-3% dari bulan lalu</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center">
+                  <i data-lucide="repeat" class="w-3.5 h-3.5 text-brand-600"></i>
+                </div>
+                <span class="text-xs text-ink-500">Transfer</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 1.2M</p>
+              <p class="text-xs text-ink-500 mt-0.5">4 transaksi</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <i data-lucide="calculator" class="w-3.5 h-3.5 text-amber-600"></i>
+                </div>
+                <span class="text-xs text-ink-500">Rata-rata/hari</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 108k</p>
+              <p class="text-xs text-ink-500 mt-0.5">30 hari</p>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="bg-white rounded-2xl border border-ink-200 p-4">
+            <div class="flex items-center gap-3 flex-wrap">
+              <div class="relative flex-1 min-w-[200px]">
+                <i data-lucide="search" class="w-4 h-4 text-ink-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" placeholder="Cari transaksi..." class="w-full pl-9 pr-3 py-2 text-sm bg-ink-100 border-0 rounded-lg focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:outline-none transition">
+              </div>
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <button class="px-3 py-1.5 bg-ink-900 text-white text-xs font-medium rounded-lg whitespace-nowrap">Semua</button>
+                <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Pemasukan</button>
+                <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Pengeluaran</button>
+                <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Transfer</button>
+              </div>
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg transition">
+                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                Juli 2026
+              </button>
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg transition">
+                <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+                Filter
+              </button>
+            </div>
+          </div>
+
+          <!-- Transaction List -->
+          <div class="space-y-6">
+
+            <!-- Today Group -->
+            <div>
+              <div class="flex items-center justify-between mb-3 px-1">
+                <div>
+                  <h3 class="text-sm font-semibold">Hari ini</h3>
+                  <p class="text-xs text-ink-500">Sabtu, 25 Juli</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-ink-500">Total</p>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 67.000</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl border border-ink-200 divide-y divide-ink-100">
+                <div class="flex items-center gap-3 p-4 hover:bg-ink-50 transition cursor-pointer group">
+                  <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="utensils" class="w-5 h-5 text-orange-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Makan siang di Warteg</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-xs text-ink-500">Makanan</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="text-xs text-ink-500">BCA</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-rose-600">- Rp 45.000</p>
+                    <p class="text-xs text-ink-500 mt-0.5">12:30</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="coffee" class="w-5 h-5 text-cyan-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Kopi Kenangan</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-xs text-ink-500">Makanan</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="text-xs text-ink-500">BCA</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-rose-600">- Rp 22.000</p>
+                    <p class="text-xs text-ink-500 mt-0.5">09:15</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Yesterday Group -->
+            <div>
+              <div class="flex items-center justify-between mb-3 px-1">
+                <div>
+                  <h3 class="text-sm font-semibold">Kemarin</h3>
+                  <p class="text-xs text-ink-500">Jumat, 24 Juli</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-ink-500">Total</p>
+                  <p class="text-sm font-semibold text-emerald-600">+ Rp 8.500.000</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl border border-ink-200 divide-y divide-ink-100">
+                <div class="flex items-center gap-3 p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="wallet" class="w-5 h-5 text-emerald-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Gaji Juli 2026</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-xs text-ink-500">Gaji</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="text-xs text-ink-500">Mandiri</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="inline-flex items-center gap-1 text-xs text-brand-600"><i data-lucide="repeat" class="w-3 h-3"></i>Bulanan</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-emerald-600">+ Rp 8.500.000</p>
+                    <p class="text-xs text-ink-500 mt-0.5">09:00</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2 Days Ago Group -->
+            <div>
+              <div class="flex items-center justify-between mb-3 px-1">
+                <div>
+                  <h3 class="text-sm font-semibold">Kamis, 23 Juli</h3>
+                  <p class="text-xs text-ink-500">2 hari lalu</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-ink-500">Total</p>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 210.000</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl border border-ink-200 divide-y divide-ink-100">
+                <div class="flex items-center gap-3 p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="fuel" class="w-5 h-5 text-brand-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Bensin Pertamax</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-xs text-ink-500">Transport</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="text-xs text-ink-500">GoPay</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-rose-600">- Rp 150.000</p>
+                    <p class="text-xs text-ink-500 mt-0.5">17:45</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="film" class="w-5 h-5 text-blue-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Netflix</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-xs text-ink-500">Hiburan</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="text-xs text-ink-500">BCA</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="inline-flex items-center gap-1 text-xs text-brand-600"><i data-lucide="repeat" class="w-3 h-3"></i>Bulanan</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-rose-600">- Rp 60.000</p>
+                    <p class="text-xs text-ink-500 mt-0.5">10:00</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3 Days Ago Group -->
+            <div>
+              <div class="flex items-center justify-between mb-3 px-1">
+                <div>
+                  <h3 class="text-sm font-semibold">Rabu, 22 Juli</h3>
+                  <p class="text-xs text-ink-500">3 hari lalu</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-ink-500">Total</p>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 335.000</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl border border-ink-200 divide-y divide-ink-100">
+                <div class="flex items-center gap-3 p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-pink-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Belanja Shopee</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-xs text-ink-500">Belanja</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="text-xs text-ink-500">ShopeePay</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-rose-600">- Rp 285.000</p>
+                    <p class="text-xs text-ink-500 mt-0.5">20:30</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="utensils" class="w-5 h-5 text-orange-600"></i>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium truncate">Gojek — Bakmi GM</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span class="text-xs text-ink-500">Makanan</span>
+                      <span class="text-xs text-ink-300">·</span>
+                      <span class="text-xs text-ink-500">GoPay</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-rose-600">- Rp 50.000</p>
+                    <p class="text-xs text-ink-500 mt-0.5">12:15</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Selasa Group (with Transfer + Fee example) -->
+            <div>
+              <div class="flex items-center justify-between mb-3 px-1">
+                <div>
+                  <h3 class="text-sm font-semibold">Selasa, 21 Juli</h3>
+                  <p class="text-xs text-ink-500">4 hari lalu</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-ink-500">Pengeluaran murni</p>
+                  <p class="text-sm font-semibold text-rose-600">- Rp 9.500</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl border border-ink-200 divide-y divide-ink-100">
+                <!-- Transfer to Investment (with fee) -->
+                <div class="p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0 relative">
+                      <i data-lucide="chart-line" class="w-5 h-5 text-brand-600"></i>
+                      <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white flex items-center justify-center">
+                        <i data-lucide="arrows-right-left" class="w-2.5 h-2.5 text-brand-600"></i>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <p class="text-sm font-medium truncate">Beli Reksadana</p>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 font-medium">Transfer</span>
+                      </div>
+                      <div class="flex items-center gap-1.5 mt-0.5 text-xs text-ink-500">
+                        <span>BCA</span>
+                        <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                        <span>Reksadana BNP</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold text-ink-900">Rp 2.000.000</p>
+                      <p class="text-xs text-ink-500 mt-0.5">14:20</p>
+                    </div>
+                  </div>
+                  <!-- Fee row nested inside transfer -->
+                  <div class="flex items-center gap-3 mt-2 ml-13 pl-13 pt-2 border-t border-dashed border-ink-100">
+                    <div class="w-6 h-6 rounded bg-ink-100 flex items-center justify-center flex-shrink-0 ml-1">
+                      <i data-lucide="receipt" class="w-3.5 h-3.5 text-ink-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <p class="text-xs text-ink-600">Fee transfer</p>
+                        <span class="text-[10px] text-ink-400">·</span>
+                        <p class="text-[11px] text-ink-500">Bank Fee</p>
+                      </div>
+                    </div>
+                    <p class="text-xs font-medium text-rose-600">- Rp 3.000</p>
+                  </div>
+                </div>
+
+                <!-- Transfer between own accounts (with fee) -->
+                <div class="p-4 hover:bg-ink-50 transition cursor-pointer">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0 relative">
+                      <i data-lucide="landmark" class="w-5 h-5 text-yellow-600"></i>
+                      <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white flex items-center justify-center">
+                        <i data-lucide="arrows-right-left" class="w-2.5 h-2.5 text-ink-600"></i>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <p class="text-sm font-medium truncate">Transfer ke tabungan</p>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-ink-100 text-ink-700 font-medium">Transfer</span>
+                      </div>
+                      <div class="flex items-center gap-1.5 mt-0.5 text-xs text-ink-500">
+                        <span>BCA</span>
+                        <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                        <span>Mandiri</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold text-ink-900">Rp 500.000</p>
+                      <p class="text-xs text-ink-500 mt-0.5">10:45</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 mt-2 pt-2 border-t border-dashed border-ink-100">
+                    <div class="w-6 h-6 rounded bg-ink-100 flex items-center justify-center flex-shrink-0 ml-1">
+                      <i data-lucide="receipt" class="w-3.5 h-3.5 text-ink-500"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <p class="text-xs text-ink-600">Fee transfer antar bank</p>
+                        <span class="text-[10px] text-ink-400">·</span>
+                        <p class="text-[11px] text-ink-500">Bank Fee</p>
+                      </div>
+                    </div>
+                    <p class="text-xs font-medium text-rose-600">- Rp 6.500</p>
+                  </div>
+                </div>
+              </div>
+              <p class="text-[11px] text-ink-400 mt-2 px-1"><i data-lucide="info" class="w-3 h-3 inline"></i> Transfer tidak mengurangi total kekayaan, hanya fee yang dihitung sebagai pengeluaran.</p>
+            </div>
+
+            <div class="flex justify-center pt-4">
+              <button class="px-6 py-2.5 bg-white border border-ink-200 hover:bg-ink-100 text-sm font-medium rounded-xl transition">
+                Muat lebih banyak
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- REPORTS PAGE -->
+      <div id="page-reports" class="page hidden">
+        <div class="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">Laporan</h1>
+              <p class="text-sm text-ink-500 mt-1">Analisis keuangan bulan Juli 2026</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="inline-flex items-center gap-2 px-3 py-2 border border-ink-200 hover:bg-ink-100 text-sm font-medium rounded-xl transition">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Cetak</span>
+              </button>
+              <div class="relative">
+                <button class="inline-flex items-center gap-2 px-4 py-2 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm">
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  Export
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="bg-white rounded-2xl border border-ink-200 p-4 space-y-3">
+            <!-- Period presets -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <span class="text-xs font-medium text-ink-500 whitespace-nowrap mr-1">Periode:</span>
+              <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Hari ini</button>
+              <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Minggu ini</button>
+              <button class="px-3 py-1.5 bg-ink-900 text-white text-xs font-medium rounded-lg whitespace-nowrap">Bulan ini</button>
+              <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">3 bulan</button>
+              <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">6 bulan</button>
+              <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Tahun ini</button>
+              <button class="px-3 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Semua</button>
+              <div class="w-px h-4 bg-ink-200"></div>
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg whitespace-nowrap">
+                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                1 – 25 Jul 2026
+              </button>
+            </div>
+
+            <div class="h-px bg-ink-100"></div>
+
+            <!-- Additional filters -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg">
+                <i data-lucide="arrows-right-left" class="w-3.5 h-3.5"></i>
+                Semua tipe
+                <i data-lucide="chevron-down" class="w-3 h-3 text-ink-400"></i>
+              </button>
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg">
+                <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+                Semua akun (4)
+                <i data-lucide="chevron-down" class="w-3 h-3 text-ink-400"></i>
+              </button>
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg">
+                <i data-lucide="shapes" class="w-3.5 h-3.5"></i>
+                Semua kategori
+                <i data-lucide="chevron-down" class="w-3 h-3 text-ink-400"></i>
+              </button>
+              <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg">
+                <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+                Tag
+                <i data-lucide="chevron-down" class="w-3 h-3 text-ink-400"></i>
+              </button>
+              <div class="flex-1"></div>
+              <button class="text-xs font-medium text-ink-500 hover:text-ink-900 px-2">
+                <i data-lucide="x" class="w-3.5 h-3.5 inline"></i>
+                Reset filter
+              </button>
+            </div>
+          </div>
+
+          <!-- Summary Cards Grid -->
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 lg:p-5 card-hover">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Pemasukan</span>
+              </div>
+              <p class="text-xl lg:text-2xl font-semibold">Rp 8.500.000</p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium">+8%</span>
+                <span class="text-[11px] text-ink-500">vs Juni</span>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 lg:p-5 card-hover">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                  <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Pengeluaran</span>
+              </div>
+              <p class="text-xl lg:text-2xl font-semibold">Rp 3.240.000</p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium">-3%</span>
+                <span class="text-[11px] text-ink-500">vs Juni (hemat!)</span>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 lg:p-5 card-hover">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center">
+                  <i data-lucide="piggy-bank" class="w-4 h-4 text-brand-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Net savings</span>
+              </div>
+              <p class="text-xl lg:text-2xl font-semibold">Rp 5.260.000</p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium">+18%</span>
+                <span class="text-[11px] text-ink-500">vs Juni</span>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 lg:p-5 card-hover">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <i data-lucide="percent" class="w-4 h-4 text-amber-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Savings rate</span>
+              </div>
+              <p class="text-xl lg:text-2xl font-semibold">61,9%</p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium">Excellent</span>
+                <span class="text-[11px] text-ink-500">Target: 30%</span>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 lg:p-5 card-hover">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-100 flex items-center justify-center">
+                  <i data-lucide="calculator" class="w-4 h-4 text-cyan-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Rata-rata/hari</span>
+              </div>
+              <p class="text-xl lg:text-2xl font-semibold">Rp 129.600</p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="text-[11px] text-ink-500">25 hari terhitung</span>
+              </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 lg:p-5 card-hover">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center">
+                  <i data-lucide="hash" class="w-4 h-4 text-pink-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Transaksi</span>
+              </div>
+              <p class="text-xl lg:text-2xl font-semibold">142</p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <span class="text-[11px] text-ink-500">5,7/hari · +12 vs Juni</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            <!-- Cashflow Trend -->
+            <div class="lg:col-span-3 bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
+                <div>
+                  <h3 class="text-base font-semibold">Trend Cashflow</h3>
+                  <p class="text-xs text-ink-500 mt-0.5">6 bulan terakhir</p>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Pemasukan</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-400"></span>Pengeluaran</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-500"></span>Savings</span>
+                </div>
+              </div>
+              <div class="h-64">
+                <canvas id="reportTrendChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Category Donut -->
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h3 class="text-base font-semibold">Pengeluaran per kategori</h3>
+                  <p class="text-xs text-ink-500 mt-0.5">Total Rp 3.24M</p>
+                </div>
+              </div>
+              <div class="h-56 relative">
+                <canvas id="categoryDonutChart"></canvas>
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div class="text-center">
+                    <p class="text-[11px] text-ink-500">Terbesar</p>
+                    <p class="text-sm font-semibold">Makanan</p>
+                    <p class="text-xs text-ink-500">30,2%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparison -->
+          <div class="bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <h3 class="text-base font-semibold">Perbandingan periode</h3>
+                <p class="text-xs text-ink-500 mt-0.5">Juli 2026 vs Juni 2026</p>
+              </div>
+              <button class="text-xs font-medium text-brand-600 hover:text-brand-700">Ubah pembanding</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-xs text-ink-500 border-b border-ink-200">
+                    <th class="pb-3 font-medium">Kategori</th>
+                    <th class="pb-3 font-medium text-right">Juli 2026</th>
+                    <th class="pb-3 font-medium text-right">Juni 2026</th>
+                    <th class="pb-3 font-medium text-right">Perubahan</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-ink-100">
+                  <tr>
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center"><i data-lucide="utensils" class="w-3.5 h-3.5 text-orange-600"></i></div>
+                        <span class="font-medium">Makanan</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right font-medium">Rp 980.000</td>
+                    <td class="py-3 text-right text-ink-500">Rp 1.120.000</td>
+                    <td class="py-3 text-right"><span class="text-emerald-600 font-medium">-12,5%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center"><i data-lucide="car" class="w-3.5 h-3.5 text-brand-600"></i></div>
+                        <span class="font-medium">Transport</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right font-medium">Rp 620.000</td>
+                    <td class="py-3 text-right text-ink-500">Rp 580.000</td>
+                    <td class="py-3 text-right"><span class="text-rose-600 font-medium">+6,9%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center"><i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                        <span class="font-medium">Belanja</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right font-medium">Rp 480.000</td>
+                    <td class="py-3 text-right text-ink-500">Rp 340.000</td>
+                    <td class="py-3 text-right"><span class="text-rose-600 font-medium">+41,2%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-pink-100 flex items-center justify-center"><i data-lucide="film" class="w-3.5 h-3.5 text-pink-600"></i></div>
+                        <span class="font-medium">Hiburan</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right font-medium">Rp 320.000</td>
+                    <td class="py-3 text-right text-ink-500">Rp 280.000</td>
+                    <td class="py-3 text-right"><span class="text-rose-600 font-medium">+14,3%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-ink-100 flex items-center justify-center"><i data-lucide="ellipsis" class="w-3.5 h-3.5 text-ink-600"></i></div>
+                        <span class="font-medium">Lainnya</span>
+                      </div>
+                    </td>
+                    <td class="py-3 text-right font-medium">Rp 840.000</td>
+                    <td class="py-3 text-right text-ink-500">Rp 1.020.000</td>
+                    <td class="py-3 text-right"><span class="text-emerald-600 font-medium">-17,6%</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Category Breakdown Detail + Account Breakdown -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Category detail -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h3 class="text-base font-semibold">Breakdown kategori</h3>
+                  <p class="text-xs text-ink-500 mt-0.5">Klik untuk drill-down</p>
+                </div>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center"><i data-lucide="utensils" class="w-3.5 h-3.5 text-orange-600"></i></div>
+                      <div>
+                        <p class="text-sm font-medium">Makanan</p>
+                        <p class="text-[11px] text-ink-500">42 transaksi · avg Rp 23k</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 980k</p>
+                      <p class="text-[11px] text-ink-500">30,2%</p>
+                    </div>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-orange-500 rounded-full" style="width: 30%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center"><i data-lucide="car" class="w-3.5 h-3.5 text-brand-600"></i></div>
+                      <div>
+                        <p class="text-sm font-medium">Transport</p>
+                        <p class="text-[11px] text-ink-500">18 transaksi · avg Rp 34k</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 620k</p>
+                      <p class="text-[11px] text-ink-500">19,1%</p>
+                    </div>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-brand-500 rounded-full" style="width: 19%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center"><i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                      <div>
+                        <p class="text-sm font-medium">Belanja</p>
+                        <p class="text-[11px] text-ink-500">8 transaksi · avg Rp 60k</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 480k</p>
+                      <p class="text-[11px] text-ink-500">14,8%</p>
+                    </div>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-emerald-500 rounded-full" style="width: 15%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-pink-100 flex items-center justify-center"><i data-lucide="film" class="w-3.5 h-3.5 text-pink-600"></i></div>
+                      <div>
+                        <p class="text-sm font-medium">Hiburan</p>
+                        <p class="text-[11px] text-ink-500">5 transaksi · avg Rp 64k</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 320k</p>
+                      <p class="text-[11px] text-ink-500">9,9%</p>
+                    </div>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-pink-500 rounded-full" style="width: 10%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center"><i data-lucide="zap" class="w-3.5 h-3.5 text-cyan-600"></i></div>
+                      <div>
+                        <p class="text-sm font-medium">Tagihan</p>
+                        <p class="text-[11px] text-ink-500">4 transaksi · avg Rp 105k</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 420k</p>
+                      <p class="text-[11px] text-ink-500">13,0%</p>
+                    </div>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-cyan-500 rounded-full" style="width: 13%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center"><i data-lucide="receipt" class="w-3.5 h-3.5 text-amber-600"></i></div>
+                      <div>
+                        <p class="text-sm font-medium">Fee bank</p>
+                        <p class="text-[11px] text-ink-500">6 transaksi · avg Rp 4k</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-sm font-semibold">Rp 24k</p>
+                      <p class="text-[11px] text-ink-500">0,7%</p>
+                    </div>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-ink-100 overflow-hidden">
+                    <div class="h-full bg-amber-500 rounded-full" style="width: 2%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Account breakdown -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 lg:p-6 card-hover">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h3 class="text-base font-semibold">Pengeluaran per akun</h3>
+                  <p class="text-xs text-ink-500 mt-0.5">Mana yang paling sering pakai</p>
+                </div>
+              </div>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 rounded-xl bg-ink-50">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center"><i data-lucide="landmark" class="w-4 h-4 text-blue-600"></i></div>
+                    <div>
+                      <p class="text-sm font-medium">BCA</p>
+                      <p class="text-[11px] text-ink-500">89 transaksi · 62%</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold">Rp 2.01M</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-xl bg-ink-50">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center"><i data-lucide="smartphone" class="w-4 h-4 text-emerald-600"></i></div>
+                    <div>
+                      <p class="text-sm font-medium">GoPay</p>
+                      <p class="text-[11px] text-ink-500">34 transaksi · 22%</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold">Rp 712k</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-xl bg-ink-50">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-pink-100 flex items-center justify-center"><i data-lucide="smartphone" class="w-4 h-4 text-pink-600"></i></div>
+                    <div>
+                      <p class="text-sm font-medium">ShopeePay</p>
+                      <p class="text-[11px] text-ink-500">12 transaksi · 12%</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold">Rp 388k</p>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 rounded-xl bg-ink-50">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-ink-100 flex items-center justify-center"><i data-lucide="banknote" class="w-4 h-4 text-ink-600"></i></div>
+                    <div>
+                      <p class="text-sm font-medium">Cash</p>
+                      <p class="text-[11px] text-ink-500">7 transaksi · 4%</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold">Rp 130k</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Top merchants -->
+              <div class="mt-6 pt-5 border-t border-ink-200">
+                <h4 class="text-sm font-semibold mb-3">Top merchant</h4>
+                <div class="space-y-2.5">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-6 h-6 rounded bg-red-100 flex items-center justify-center"><i data-lucide="shopping-cart" class="w-3.5 h-3.5 text-red-600"></i></div>
+                      <span class="text-sm">Shopee</span>
+                    </div>
+                    <span class="text-sm font-medium">Rp 285k</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-6 h-6 rounded bg-green-100 flex items-center justify-center"><i data-lucide="motorcycle" class="w-3.5 h-3.5 text-green-600"></i></div>
+                      <span class="text-sm">Gojek Food</span>
+                    </div>
+                    <span class="text-sm font-medium">Rp 240k</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-6 h-6 rounded bg-red-100 flex items-center justify-center"><i data-lucide="fuel" class="w-3.5 h-3.5 text-red-600"></i></div>
+                      <span class="text-sm">Pertamina</span>
+                    </div>
+                    <span class="text-sm font-medium">Rp 300k</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-6 h-6 rounded bg-cyan-100 flex items-center justify-center"><i data-lucide="coffee" class="w-3.5 h-3.5 text-cyan-600"></i></div>
+                      <span class="text-sm">Kopi Kenangan</span>
+                    </div>
+                    <span class="text-sm font-medium">Rp 132k</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Insights -->
+          <div class="bg-gradient-to-br from-brand-50 to-purple-50 rounded-2xl border border-brand-200 p-5 lg:p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
+                <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+              </div>
+              <h3 class="text-base font-semibold">Insights bulan ini</h3>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-white/60 text-brand-700 font-medium">AI-powered</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="p-4 bg-white/70 rounded-xl backdrop-blur border border-white">
+                <div class="flex items-start gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0"><i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                  <div>
+                    <p class="text-sm font-medium">Savings rate kamu naik ke 62%</p>
+                    <p class="text-xs text-ink-500 mt-1">Jauh di atas rata-rata orang seusiamu (25%). Pertahankan!</p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-4 bg-white/70 rounded-xl backdrop-blur border border-white">
+                <div class="flex items-start gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center flex-shrink-0"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-600"></i></div>
+                  <div>
+                    <p class="text-sm font-medium">Belanja Shopee naik 41% dari Juni</p>
+                    <p class="text-xs text-ink-500 mt-1">3 transaksi di atas Rp 200k minggu ini. Review keranjang?</p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-4 bg-white/70 rounded-xl backdrop-blur border border-white">
+                <div class="flex items-start gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0"><i data-lucide="receipt" class="w-3.5 h-3.5 text-amber-600"></i></div>
+                  <div>
+                    <p class="text-sm font-medium">Fee bank total Rp 24k bulan ini</p>
+                    <p class="text-xs text-ink-500 mt-1">Pertimbangkan BI-Fast (Rp 2.500) daripada transfer biasa (Rp 6.500).</p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-4 bg-white/70 rounded-xl backdrop-blur border border-white">
+                <div class="flex items-start gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0"><i data-lucide="chart-line" class="w-3.5 h-3.5 text-brand-600"></i></div>
+                  <div>
+                    <p class="text-sm font-medium">Reksadana kamu +8,1% YTD</p>
+                    <p class="text-xs text-ink-500 mt-1">Beat IHSG (+5,2%). Portofolio kamu on track.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Transaction List -->
+          <div class="bg-white rounded-2xl border border-ink-200 overflow-hidden">
+            <div class="flex items-center justify-between p-5 border-b border-ink-200">
+              <div>
+                <h3 class="text-base font-semibold">Semua transaksi</h3>
+                <p class="text-xs text-ink-500 mt-0.5">142 transaksi sesuai filter</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg">
+                  <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i>
+                  Terbaru
+                </button>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-ink-50">
+                  <tr class="text-left text-xs text-ink-500">
+                    <th class="px-5 py-3 font-medium">Tanggal</th>
+                    <th class="px-5 py-3 font-medium">Deskripsi</th>
+                    <th class="px-5 py-3 font-medium hidden md:table-cell">Kategori</th>
+                    <th class="px-5 py-3 font-medium hidden lg:table-cell">Akun</th>
+                    <th class="px-5 py-3 font-medium text-right">Jumlah</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-ink-100">
+                  <tr class="hover:bg-ink-50 transition cursor-pointer">
+                    <td class="px-5 py-3 text-xs text-ink-500 whitespace-nowrap">25 Jul, 12:30</td>
+                    <td class="px-5 py-3">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center"><i data-lucide="utensils" class="w-3.5 h-3.5 text-orange-600"></i></div>
+                        <span class="font-medium">Makan siang</span>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3 hidden md:table-cell text-ink-600">Makanan</td>
+                    <td class="px-5 py-3 hidden lg:table-cell text-ink-600">BCA</td>
+                    <td class="px-5 py-3 text-right font-semibold text-rose-600 whitespace-nowrap">- Rp 45.000</td>
+                  </tr>
+                  <tr class="hover:bg-ink-50 transition cursor-pointer">
+                    <td class="px-5 py-3 text-xs text-ink-500 whitespace-nowrap">25 Jul, 09:15</td>
+                    <td class="px-5 py-3">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center"><i data-lucide="coffee" class="w-3.5 h-3.5 text-cyan-600"></i></div>
+                        <span class="font-medium">Kopi Kenangan</span>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3 hidden md:table-cell text-ink-600">Makanan</td>
+                    <td class="px-5 py-3 hidden lg:table-cell text-ink-600">BCA</td>
+                    <td class="px-5 py-3 text-right font-semibold text-rose-600 whitespace-nowrap">- Rp 22.000</td>
+                  </tr>
+                  <tr class="hover:bg-ink-50 transition cursor-pointer">
+                    <td class="px-5 py-3 text-xs text-ink-500 whitespace-nowrap">24 Jul, 09:00</td>
+                    <td class="px-5 py-3">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center"><i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                        <span class="font-medium">Gaji Juli 2026</span>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3 hidden md:table-cell text-ink-600">Gaji</td>
+                    <td class="px-5 py-3 hidden lg:table-cell text-ink-600">Mandiri</td>
+                    <td class="px-5 py-3 text-right font-semibold text-emerald-600 whitespace-nowrap">+ Rp 8.500.000</td>
+                  </tr>
+                  <tr class="hover:bg-ink-50 transition cursor-pointer">
+                    <td class="px-5 py-3 text-xs text-ink-500 whitespace-nowrap">23 Jul, 17:45</td>
+                    <td class="px-5 py-3">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center"><i data-lucide="fuel" class="w-3.5 h-3.5 text-brand-600"></i></div>
+                        <span class="font-medium">Bensin Pertamax</span>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3 hidden md:table-cell text-ink-600">Transport</td>
+                    <td class="px-5 py-3 hidden lg:table-cell text-ink-600">GoPay</td>
+                    <td class="px-5 py-3 text-right font-semibold text-rose-600 whitespace-nowrap">- Rp 150.000</td>
+                  </tr>
+                  <tr class="hover:bg-ink-50 transition cursor-pointer">
+                    <td class="px-5 py-3 text-xs text-ink-500 whitespace-nowrap">21 Jul, 14:20</td>
+                    <td class="px-5 py-3">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center"><i data-lucide="chart-line" class="w-3.5 h-3.5 text-brand-600"></i></div>
+                        <span class="font-medium">Beli Reksadana</span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 font-medium">Transfer</span>
+                      </div>
+                    </td>
+                    <td class="px-5 py-3 hidden md:table-cell text-ink-600">—</td>
+                    <td class="px-5 py-3 hidden lg:table-cell text-ink-600">BCA → Reksadana</td>
+                    <td class="px-5 py-3 text-right font-semibold text-ink-900 whitespace-nowrap">Rp 2.000.000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="p-4 border-t border-ink-200 flex items-center justify-between flex-wrap gap-2">
+              <p class="text-xs text-ink-500">Menampilkan 5 dari 142 transaksi</p>
+              <div class="flex items-center gap-1">
+                <button class="w-8 h-8 hover:bg-ink-100 rounded-lg flex items-center justify-center"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                <button class="w-8 h-8 bg-ink-900 text-white rounded-lg text-xs font-medium">1</button>
+                <button class="w-8 h-8 hover:bg-ink-100 rounded-lg text-xs font-medium">2</button>
+                <button class="w-8 h-8 hover:bg-ink-100 rounded-lg text-xs font-medium">3</button>
+                <span class="px-1 text-ink-400">...</span>
+                <button class="w-8 h-8 hover:bg-ink-100 rounded-lg text-xs font-medium">29</button>
+                <button class="w-8 h-8 hover:bg-ink-100 rounded-lg flex items-center justify-center"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BUDGET PAGE -->
+      <div id="page-budget" class="page hidden">
+        <div class="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">Budget</h1>
+              <p class="text-sm text-ink-500 mt-1">Atur target pengeluaran per kategori</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="inline-flex items-center gap-1.5 px-3 py-2 border border-ink-200 hover:bg-ink-100 text-sm font-medium rounded-xl transition">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <button class="inline-flex items-center gap-2 px-3 py-2 border border-ink-200 hover:bg-ink-100 text-sm font-medium rounded-xl transition">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+                Juli 2026
+              </button>
+              <button class="inline-flex items-center gap-1.5 px-3 py-2 border border-ink-200 hover:bg-ink-100 text-sm font-medium rounded-xl transition">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+              <button class="inline-flex items-center gap-2 px-4 py-2 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm ml-1">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Set budget
+              </button>
+            </div>
+          </div>
+
+          <!-- Overview Card -->
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink-800 via-ink-900 to-ink-800 p-6 lg:p-8 text-white">
+            <div class="absolute -top-16 -right-16 w-52 h-52 bg-brand-500/10 rounded-full blur-3xl"></div>
+            <div class="relative">
+              <div class="flex items-start justify-between flex-wrap gap-4 mb-6">
+                <div>
+                  <p class="text-sm text-ink-400 mb-1">Total budget bulan ini</p>
+                  <div class="flex items-baseline gap-3">
+                    <h2 class="text-3xl lg:text-4xl font-semibold tracking-tight">Rp 3.240.000</h2>
+                    <span class="text-sm text-ink-400">/ Rp 4.500.000</span>
+                  </div>
+                  <p class="text-xs text-ink-400 mt-2">Sisa <span class="text-emerald-300 font-medium">Rp 1.260.000</span> · 6 hari lagi sampai akhir bulan</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xs text-ink-400">Terpakai</p>
+                  <p class="text-2xl font-semibold">72%</p>
+                </div>
+              </div>
+
+              <!-- Progress bar overall -->
+              <div class="h-3 rounded-full bg-white/10 overflow-hidden mb-2">
+                <div class="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full transition-all" style="width: 72%"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-ink-400">
+                <span>0</span>
+                <span class="text-emerald-300"><i data-lucide="check-circle" class="w-3 h-3 inline"></i> Masih on-track (target harian Rp 210k, aktual Rp 130k)</span>
+                <span>Rp 4.5M</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alert (Over Budget) -->
+          <div class="flex items-start gap-3 p-4 rounded-2xl bg-rose-50 border border-rose-200">
+            <div class="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-rose-900">1 kategori sudah melewati budget</p>
+              <p class="text-xs text-rose-700 mt-0.5"><strong>Hiburan</strong> sudah Rp 320k dari budget Rp 250k (+28%). Pertimbangkan naikkan budget atau kurangi pengeluaran.</p>
+            </div>
+            <button class="text-xs font-medium text-rose-700 hover:text-rose-900 whitespace-nowrap self-center">Sesuaikan</button>
+          </div>
+
+          <!-- Budget Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <!-- On track -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <i data-lucide="utensils" class="w-5 h-5 text-orange-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Makanan</p>
+                    <p class="text-[11px] text-ink-500">42 transaksi bulan ini</p>
+                  </div>
+                </div>
+                <button class="text-ink-400 hover:text-ink-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <div>
+                  <p class="text-2xl font-semibold">Rp 980k</p>
+                  <p class="text-xs text-ink-500">dari Rp 1.500k</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-semibold text-emerald-600">65%</p>
+                  <p class="text-[11px] text-ink-500">Sisa Rp 520k</p>
+                </div>
+              </div>
+              <div class="h-2 rounded-full bg-ink-100 overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 65%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-2.5 text-[11px]">
+                <span class="text-emerald-600 font-medium"><i data-lucide="check" class="w-3 h-3 inline"></i> On track</span>
+                <span class="text-ink-500">Rata-rata Rp 39k/hari</span>
+              </div>
+            </div>
+
+            <!-- Warning -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                    <i data-lucide="car" class="w-5 h-5 text-brand-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Transport</p>
+                    <p class="text-[11px] text-ink-500">18 transaksi bulan ini</p>
+                  </div>
+                </div>
+                <button class="text-ink-400 hover:text-ink-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <div>
+                  <p class="text-2xl font-semibold">Rp 620k</p>
+                  <p class="text-xs text-ink-500">dari Rp 750k</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-semibold text-amber-600">83%</p>
+                  <p class="text-[11px] text-ink-500">Sisa Rp 130k</p>
+                </div>
+              </div>
+              <div class="h-2 rounded-full bg-ink-100 overflow-hidden">
+                <div class="h-full bg-amber-500 rounded-full" style="width: 83%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-2.5 text-[11px]">
+                <span class="text-amber-600 font-medium"><i data-lucide="alert-circle" class="w-3 h-3 inline"></i> Hati-hati (mendekati limit)</span>
+                <span class="text-ink-500">Rata-rata Rp 34k/hari</span>
+              </div>
+            </div>
+
+            <!-- Under budget -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 text-emerald-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Belanja</p>
+                    <p class="text-[11px] text-ink-500">8 transaksi bulan ini</p>
+                  </div>
+                </div>
+                <button class="text-ink-400 hover:text-ink-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <div>
+                  <p class="text-2xl font-semibold">Rp 480k</p>
+                  <p class="text-xs text-ink-500">dari Rp 1.000k</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-semibold text-emerald-600">48%</p>
+                  <p class="text-[11px] text-ink-500">Sisa Rp 520k</p>
+                </div>
+              </div>
+              <div class="h-2 rounded-full bg-ink-100 overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 48%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-2.5 text-[11px]">
+                <span class="text-emerald-600 font-medium"><i data-lucide="check" class="w-3 h-3 inline"></i> Hemat</span>
+                <span class="text-ink-500">Rata-rata Rp 60k/transaksi</span>
+              </div>
+            </div>
+
+            <!-- Over budget -->
+            <div class="bg-white rounded-2xl border-2 border-rose-300 p-5 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center">
+                    <i data-lucide="film" class="w-5 h-5 text-pink-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Hiburan</p>
+                    <p class="text-[11px] text-ink-500">5 transaksi bulan ini</p>
+                  </div>
+                </div>
+                <button class="text-ink-400 hover:text-ink-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <div>
+                  <p class="text-2xl font-semibold text-rose-600">Rp 320k</p>
+                  <p class="text-xs text-ink-500">dari Rp 250k</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-semibold text-rose-600">128%</p>
+                  <p class="text-[11px] text-rose-600 font-medium">Over Rp 70k</p>
+                </div>
+              </div>
+              <div class="h-2 rounded-full bg-rose-100 overflow-hidden">
+                <div class="h-full bg-rose-500 rounded-full" style="width: 100%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-2.5 text-[11px]">
+                <span class="text-rose-600 font-medium"><i data-lucide="alert-triangle" class="w-3 h-3 inline"></i> Melebihi budget</span>
+                <button class="text-brand-600 font-medium hover:underline">Naikkan budget?</button>
+              </div>
+            </div>
+
+            <!-- On track -->
+            <div class="bg-white rounded-2xl border border-ink-200 p-5 card-hover">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-cyan-100 flex items-center justify-center">
+                    <i data-lucide="zap" class="w-5 h-5 text-cyan-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Tagihan</p>
+                    <p class="text-[11px] text-ink-500">4 transaksi bulan ini</p>
+                  </div>
+                </div>
+                <button class="text-ink-400 hover:text-ink-600"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <div>
+                  <p class="text-2xl font-semibold">Rp 420k</p>
+                  <p class="text-xs text-ink-500">dari Rp 500k</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-semibold text-emerald-600">84%</p>
+                  <p class="text-[11px] text-ink-500">Sisa Rp 80k</p>
+                </div>
+              </div>
+              <div class="h-2 rounded-full bg-ink-100 overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 84%"></div>
+              </div>
+              <div class="flex items-center justify-between mt-2.5 text-[11px]">
+                <span class="text-emerald-600 font-medium"><i data-lucide="check" class="w-3 h-3 inline"></i> Terjadwal</span>
+                <span class="text-ink-500">Recurring · listrik & internet</span>
+              </div>
+            </div>
+
+            <!-- No budget set -->
+            <div class="bg-ink-50 rounded-2xl border-2 border-dashed border-ink-200 p-5 flex flex-col items-center justify-center text-center min-h-[220px] hover:border-brand-400 hover:bg-brand-50/30 transition cursor-pointer">
+              <div class="w-12 h-12 rounded-xl bg-ink-100 flex items-center justify-center mb-3">
+                <i data-lucide="plus" class="w-6 h-6 text-ink-500"></i>
+              </div>
+              <p class="font-medium text-ink-700">Tambah budget kategori</p>
+              <p class="text-xs text-ink-500 mt-1 max-w-[240px]">Set target pengeluaran biar keuangan lebih terkontrol</p>
+            </div>
+          </div>
+
+          <!-- Tips Section -->
+          <div class="bg-gradient-to-br from-brand-50 to-purple-50 rounded-2xl border border-brand-200 p-5 lg:p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-white"></i>
+              </div>
+              <h3 class="text-base font-semibold">Tips atur budget</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="p-4 bg-white/70 rounded-xl backdrop-blur border border-white">
+                <p class="text-sm font-medium mb-1">Rumus 50/30/20</p>
+                <p class="text-xs text-ink-600">50% kebutuhan, 30% keinginan, 20% tabungan/investasi</p>
+              </div>
+              <div class="p-4 bg-white/70 rounded-xl backdrop-blur border border-white">
+                <p class="text-sm font-medium mb-1">Review tiap minggu</p>
+                <p class="text-xs text-ink-600">Cek progress budget setiap Minggu malam biar bisa adjust</p>
+              </div>
+              <div class="p-4 bg-white/70 rounded-xl backdrop-blur border border-white">
+                <p class="text-sm font-medium mb-1">Mulai dari 3 kategori</p>
+                <p class="text-xs text-ink-600">Fokus ke Makanan, Transport, Hiburan dulu — bukan semua sekaligus</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ACCOUNTS PAGE -->
+      <div id="page-accounts" class="page hidden">
+        <div class="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 lg:py-8 space-y-6">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h1 class="text-2xl lg:text-3xl font-semibold tracking-tight">Akun</h1>
+              <p class="text-sm text-ink-500 mt-1">6 akun aktif · Total kekayaan Rp 34.850.000</p>
+            </div>
+            <button class="inline-flex items-center gap-2 px-4 py-2 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              Tambah akun
+            </button>
+          </div>
+
+          <!-- Summary Card -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Bank</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 23.6M</p>
+              <p class="text-[11px] text-ink-500 mt-0.5">2 akun · 68%</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <i data-lucide="smartphone" class="w-3.5 h-3.5 text-emerald-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">E-wallet</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 850k</p>
+              <p class="text-[11px] text-ink-500 mt-0.5">1 akun · 2%</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-ink-100 flex items-center justify-center">
+                  <i data-lucide="banknote" class="w-3.5 h-3.5 text-ink-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Cash</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 400k</p>
+              <p class="text-[11px] text-ink-500 mt-0.5">1 akun · 1%</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-ink-200 p-4 card-hover">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center">
+                  <i data-lucide="chart-line" class="w-3.5 h-3.5 text-brand-600"></i>
+                </div>
+                <span class="text-xs text-ink-500 font-medium">Investasi</span>
+              </div>
+              <p class="text-lg lg:text-xl font-semibold">Rp 10M</p>
+              <p class="text-[11px] text-emerald-600 mt-0.5">2 akun · +8,2%</p>
+            </div>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button class="px-3.5 py-1.5 bg-ink-900 text-white text-xs font-medium rounded-lg whitespace-nowrap">Semua (6)</button>
+            <button class="px-3.5 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Bank (2)</button>
+            <button class="px-3.5 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">E-wallet (1)</button>
+            <button class="px-3.5 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Cash (1)</button>
+            <button class="px-3.5 py-1.5 hover:bg-ink-100 text-ink-600 text-xs font-medium rounded-lg whitespace-nowrap">Investasi (2)</button>
+            <div class="flex-1"></div>
+            <button class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-ink-200 hover:bg-ink-100 text-xs font-medium rounded-lg whitespace-nowrap">
+              <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Sembunyi (0)</span>
+            </button>
+          </div>
+
+          <!-- BANK Section -->
+          <div>
+            <div class="flex items-center gap-2 mb-3 px-1">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-ink-500">Bank</h3>
+              <div class="flex-1 h-px bg-ink-200"></div>
+              <span class="text-xs text-ink-500">Rp 23.6M</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- BCA -->
+              <div class="bg-white rounded-2xl border border-ink-200 overflow-hidden card-hover group">
+                <div class="p-5">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <i data-lucide="landmark" class="w-6 h-6 text-blue-600"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">BCA</p>
+                        <p class="text-xs text-ink-500">Bank · 6789****4321</p>
+                      </div>
+                    </div>
+                    <button class="opacity-0 group-hover:opacity-100 transition w-8 h-8 hover:bg-ink-100 rounded-lg flex items-center justify-center">
+                      <i data-lucide="more-vertical" class="w-4 h-4 text-ink-500"></i>
+                    </button>
+                  </div>
+                  <div class="mb-4">
+                    <p class="text-xs text-ink-500">Saldo saat ini</p>
+                    <p class="text-2xl font-semibold">Rp 15.200.000</p>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3 py-3 border-t border-ink-100">
+                    <div>
+                      <p class="text-[11px] text-ink-500">Transaksi bulan ini</p>
+                      <p class="text-sm font-medium">89</p>
+                    </div>
+                    <div>
+                      <p class="text-[11px] text-ink-500">Total keluar</p>
+                      <p class="text-sm font-medium text-rose-600">- Rp 2.01M</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 border-t border-ink-100 divide-x divide-ink-100">
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>Transaksi
+                  </button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit
+                  </button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>Sembunyi
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mandiri -->
+              <div class="bg-white rounded-2xl border border-ink-200 overflow-hidden card-hover group">
+                <div class="p-5">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
+                        <i data-lucide="landmark" class="w-6 h-6 text-yellow-600"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">Mandiri</p>
+                        <p class="text-xs text-ink-500">Bank · 1234****9876</p>
+                      </div>
+                    </div>
+                    <button class="opacity-0 group-hover:opacity-100 transition w-8 h-8 hover:bg-ink-100 rounded-lg flex items-center justify-center">
+                      <i data-lucide="more-vertical" class="w-4 h-4 text-ink-500"></i>
+                    </button>
+                  </div>
+                  <div class="mb-4">
+                    <p class="text-xs text-ink-500">Saldo saat ini</p>
+                    <p class="text-2xl font-semibold">Rp 8.400.000</p>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3 py-3 border-t border-ink-100">
+                    <div>
+                      <p class="text-[11px] text-ink-500">Transaksi bulan ini</p>
+                      <p class="text-sm font-medium">3</p>
+                    </div>
+                    <div>
+                      <p class="text-[11px] text-ink-500">Total masuk</p>
+                      <p class="text-sm font-medium text-emerald-600">+ Rp 8.5M</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 border-t border-ink-100 divide-x divide-ink-100">
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>Transaksi
+                  </button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit
+                  </button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>Sembunyi
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- E-WALLET Section -->
+          <div>
+            <div class="flex items-center gap-2 mb-3 px-1">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-ink-500">E-wallet</h3>
+              <div class="flex-1 h-px bg-ink-200"></div>
+              <span class="text-xs text-ink-500">Rp 850k</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-white rounded-2xl border border-ink-200 overflow-hidden card-hover group">
+                <div class="p-5">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                        <i data-lucide="smartphone" class="w-6 h-6 text-emerald-600"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">GoPay</p>
+                        <p class="text-xs text-ink-500">E-wallet · +62812****3456</p>
+                      </div>
+                    </div>
+                    <button class="opacity-0 group-hover:opacity-100 transition w-8 h-8 hover:bg-ink-100 rounded-lg flex items-center justify-center">
+                      <i data-lucide="more-vertical" class="w-4 h-4 text-ink-500"></i>
+                    </button>
+                  </div>
+                  <div class="mb-4">
+                    <p class="text-xs text-ink-500">Saldo saat ini</p>
+                    <p class="text-2xl font-semibold">Rp 850.000</p>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3 py-3 border-t border-ink-100">
+                    <div>
+                      <p class="text-[11px] text-ink-500">Transaksi bulan ini</p>
+                      <p class="text-sm font-medium">34</p>
+                    </div>
+                    <div>
+                      <p class="text-[11px] text-ink-500">Total keluar</p>
+                      <p class="text-sm font-medium text-rose-600">- Rp 712k</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 border-t border-ink-100 divide-x divide-ink-100">
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>Transaksi</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="eye-off" class="w-3.5 h-3.5"></i>Sembunyi</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CASH Section -->
+          <div>
+            <div class="flex items-center gap-2 mb-3 px-1">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-ink-500">Cash</h3>
+              <div class="flex-1 h-px bg-ink-200"></div>
+              <span class="text-xs text-ink-500">Rp 400k</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-white rounded-2xl border border-ink-200 overflow-hidden card-hover group">
+                <div class="p-5">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-ink-100 flex items-center justify-center">
+                        <i data-lucide="banknote" class="w-6 h-6 text-ink-600"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">Dompet</p>
+                        <p class="text-xs text-ink-500">Tunai</p>
+                      </div>
+                    </div>
+                    <button class="opacity-0 group-hover:opacity-100 transition w-8 h-8 hover:bg-ink-100 rounded-lg flex items-center justify-center">
+                      <i data-lucide="more-vertical" class="w-4 h-4 text-ink-500"></i>
+                    </button>
+                  </div>
+                  <div class="mb-4">
+                    <p class="text-xs text-ink-500">Saldo saat ini</p>
+                    <p class="text-2xl font-semibold">Rp 400.000</p>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3 py-3 border-t border-ink-100">
+                    <div>
+                      <p class="text-[11px] text-ink-500">Transaksi bulan ini</p>
+                      <p class="text-sm font-medium">7</p>
+                    </div>
+                    <div>
+                      <p class="text-[11px] text-ink-500">Total keluar</p>
+                      <p class="text-sm font-medium text-rose-600">- Rp 130k</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 border-t border-ink-100 divide-x divide-ink-100">
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>Transaksi</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="eye-off" class="w-3.5 h-3.5"></i>Sembunyi</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- INVESTASI Section -->
+          <div>
+            <div class="flex items-center gap-2 mb-3 px-1">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-ink-500">Investasi</h3>
+              <div class="flex-1 h-px bg-ink-200"></div>
+              <span class="text-xs text-emerald-600 font-medium">+Rp 760k (+8,2%)</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Reksadana -->
+              <div class="bg-white rounded-2xl border border-ink-200 overflow-hidden card-hover group">
+                <div class="p-5">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-brand-100 flex items-center justify-center">
+                        <i data-lucide="chart-line" class="w-6 h-6 text-brand-600"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">Reksadana BNP</p>
+                        <p class="text-xs text-ink-500">Investasi · Bibit</p>
+                      </div>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">+8,1%</span>
+                  </div>
+                  <div class="mb-3">
+                    <p class="text-xs text-ink-500">Nilai saat ini</p>
+                    <p class="text-2xl font-semibold">Rp 8.000.000</p>
+                    <p class="text-xs text-emerald-600 mt-0.5"><i data-lucide="trending-up" class="w-3 h-3 inline"></i> +Rp 600.000 dari modal Rp 7.4M</p>
+                  </div>
+                  <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 mb-3">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-[11px] text-emerald-700 font-medium">Performa</span>
+                      <span class="text-[11px] text-emerald-700">Beat IHSG (+5,2%)</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                      <div>
+                        <p class="text-[10px] text-ink-500">1 bulan</p>
+                        <p class="text-xs font-semibold text-emerald-600">+2,1%</p>
+                      </div>
+                      <div>
+                        <p class="text-[10px] text-ink-500">6 bulan</p>
+                        <p class="text-xs font-semibold text-emerald-600">+5,4%</p>
+                      </div>
+                      <div>
+                        <p class="text-[10px] text-ink-500">YTD</p>
+                        <p class="text-xs font-semibold text-emerald-600">+8,1%</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 border-t border-ink-100 divide-x divide-ink-100">
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>Update</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="chart-bar" class="w-3.5 h-3.5"></i>Detail</button>
+                </div>
+              </div>
+
+              <!-- Crypto -->
+              <div class="bg-white rounded-2xl border border-ink-200 overflow-hidden card-hover group">
+                <div class="p-5">
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                        <i data-lucide="bitcoin" class="w-6 h-6 text-amber-600"></i>
+                      </div>
+                      <div>
+                        <p class="font-semibold">Crypto Portfolio</p>
+                        <p class="text-xs text-ink-500">Investasi · Indodax</p>
+                      </div>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">+11,1%</span>
+                  </div>
+                  <div class="mb-3">
+                    <p class="text-xs text-ink-500">Nilai saat ini</p>
+                    <p class="text-2xl font-semibold">Rp 2.000.000</p>
+                    <p class="text-xs text-emerald-600 mt-0.5"><i data-lucide="trending-up" class="w-3 h-3 inline"></i> +Rp 200.000 dari modal Rp 1.8M</p>
+                  </div>
+                  <div class="p-3 rounded-xl bg-amber-50 border border-amber-100 mb-3">
+                    <p class="text-[11px] text-amber-800 font-medium mb-2">Holdings</p>
+                    <div class="space-y-1.5 text-xs">
+                      <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>BTC</span>
+                        <span class="font-medium">Rp 1.2M · 60%</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>ETH</span>
+                        <span class="font-medium">Rp 600k · 30%</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>SOL</span>
+                        <span class="font-medium">Rp 200k · 10%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 border-t border-ink-100 divide-x divide-ink-100">
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>Update</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="pencil" class="w-3.5 h-3.5"></i>Edit</button>
+                  <button class="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"><i data-lucide="chart-bar" class="w-3.5 h-3.5"></i>Detail</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Add Transaction Modal -->
+<div id="txModal" class="hidden fixed inset-0 z-50 items-end sm:items-center justify-center p-0 sm:p-4">
+  <div onclick="closeTxModal()" class="absolute inset-0 bg-ink-900/40 backdrop-blur-sm"></div>
+  <div class="relative bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl shadow-2xl max-h-[92vh] overflow-hidden flex flex-col animate-slideup">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-ink-200 flex-shrink-0">
+      <h3 class="text-base font-semibold">Tambah transaksi</h3>
+      <button onclick="closeTxModal()" class="w-8 h-8 rounded-lg hover:bg-ink-100 flex items-center justify-center">
+        <i data-lucide="x" class="w-5 h-5 text-ink-500"></i>
+      </button>
+    </div>
+
+    <!-- Type Tabs -->
+    <div class="px-5 pt-4 flex-shrink-0">
+      <div class="grid grid-cols-3 p-1 bg-ink-100 rounded-xl">
+        <button onclick="switchTxType('income')" data-tx-tab="income" class="tx-tab-btn py-2 text-xs font-medium rounded-lg text-ink-500 transition">
+          <i data-lucide="arrow-down-left" class="w-3.5 h-3.5 inline mr-1"></i>Pemasukan
+        </button>
+        <button onclick="switchTxType('expense')" data-tx-tab="expense" class="tx-tab-btn py-2 text-xs font-medium rounded-lg text-ink-500 transition">
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 inline mr-1"></i>Pengeluaran
+        </button>
+        <button onclick="switchTxType('transfer')" data-tx-tab="transfer" class="tx-tab-btn py-2 text-xs font-medium rounded-lg bg-white text-brand-700 shadow-sm">
+          <i data-lucide="arrows-right-left" class="w-3.5 h-3.5 inline mr-1"></i>Transfer
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Body (Transfer view) -->
+    <div class="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+
+      <!-- Amount -->
+      <div>
+        <label class="text-xs text-ink-500 block mb-2">Jumlah</label>
+        <div class="flex items-baseline gap-2">
+          <span class="text-lg text-ink-500">Rp</span>
+          <input id="txAmount" type="text" value="2.000.000" oninput="updatePreview()" class="text-3xl font-semibold flex-1 border-0 focus:outline-none focus:ring-0 p-0 bg-transparent">
+        </div>
+        <div class="h-px bg-ink-200 mt-2"></div>
+      </div>
+
+      <!-- From → To Accounts -->
+      <div class="grid grid-cols-[1fr_auto_1fr] gap-3 items-end">
+        <div>
+          <label class="text-xs text-ink-500 block mb-2">Dari akun</label>
+          <button class="w-full flex items-center gap-2.5 p-3 border border-ink-200 rounded-xl hover:bg-ink-50 transition text-left">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="landmark" class="w-4 h-4 text-blue-600"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium">BCA</p>
+              <p class="text-[11px] text-ink-500">Rp 15.2M</p>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-ink-400"></i>
+          </button>
+        </div>
+        <div class="pb-3.5 flex items-center justify-center">
+          <div class="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center">
+            <i data-lucide="arrow-right" class="w-4 h-4 text-brand-600"></i>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-ink-500 block mb-2">Ke akun</label>
+          <button class="w-full flex items-center gap-2.5 p-3 border-2 border-brand-500 rounded-xl bg-brand-50/50 transition text-left">
+            <div class="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="chart-line" class="w-4 h-4 text-brand-600"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium">Reksadana BNP</p>
+              <p class="text-[11px] text-brand-600">Investasi</p>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-ink-400"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Fee Toggle -->
+      <div class="p-4 border border-ink-200 rounded-xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+              <i data-lucide="receipt" class="w-4 h-4 text-amber-600"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium">Ada biaya admin?</p>
+              <p class="text-[11px] text-ink-500">Fee akan dicatat sebagai expense terpisah</p>
+            </div>
+          </div>
+          <button onclick="toggleFee()" id="feeToggle" class="relative w-11 h-6 rounded-full bg-brand-600 transition flex-shrink-0">
+            <span class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-white shadow transition"></span>
+          </button>
+        </div>
+
+        <div id="feeSection" class="mt-4 pt-4 border-t border-ink-200 space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-ink-500 block mb-1.5">Jumlah fee</label>
+              <div class="flex items-center gap-1 border border-ink-200 rounded-lg px-3 py-2">
+                <span class="text-xs text-ink-500">Rp</span>
+                <input id="txFee" type="text" value="3.000" oninput="updatePreview()" class="text-sm font-medium flex-1 border-0 focus:outline-none focus:ring-0 p-0 bg-transparent">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-ink-500 block mb-1.5">Kategori fee</label>
+              <button class="w-full flex items-center gap-2 px-3 py-2 border border-ink-200 rounded-lg hover:bg-ink-50 transition text-left">
+                <span class="text-sm">Bank Fee</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-ink-400 ml-auto"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date + Note -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-ink-500 block mb-1.5">Tanggal</label>
+          <button class="w-full flex items-center gap-2 px-3 py-2.5 border border-ink-200 rounded-lg hover:bg-ink-50 transition text-left">
+            <i data-lucide="calendar" class="w-4 h-4 text-ink-500"></i>
+            <span class="text-sm">Hari ini, 25 Jul</span>
+          </button>
+        </div>
+        <div>
+          <label class="text-xs text-ink-500 block mb-1.5">Catatan</label>
+          <input type="text" placeholder="Opsional..." class="w-full px-3 py-2.5 text-sm border border-ink-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="p-4 rounded-xl bg-ink-50 border border-ink-200">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-ink-500 mb-3">Preview perubahan</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+              <span>BCA</span>
+            </div>
+            <span id="prevFrom" class="font-medium text-rose-600">- Rp 2.003.000</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+              <span>Reksadana BNP</span>
+            </div>
+            <span id="prevTo" class="font-medium text-emerald-600">+ Rp 2.000.000</span>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-ink-200">
+            <span class="text-xs text-ink-500">Efek ke kekayaan bersih</span>
+            <span id="prevNet" class="text-xs font-semibold text-rose-600">- Rp 3.000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="px-5 py-4 border-t border-ink-200 flex items-center gap-3 flex-shrink-0 bg-white">
+      <button onclick="closeTxModal()" class="flex-1 py-2.5 border border-ink-200 hover:bg-ink-100 text-sm font-medium rounded-xl transition">Batal</button>
+      <button class="flex-1 py-2.5 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes slideup {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .animate-slideup { animation: slideup 0.2s ease-out; }
+</style>
+
+<!-- Mobile Bottom Nav -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 glass border-t border-ink-200">
+  <div class="grid grid-cols-5 items-center h-16 px-2">
+    <button onclick="showPage('dashboard')" data-nav-mobile="dashboard" class="flex flex-col items-center gap-1 py-2 rounded-lg">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Home</span>
+    </button>
+    <button onclick="showPage('transactions')" data-nav-mobile="transactions" class="flex flex-col items-center gap-1 py-2 rounded-lg text-ink-400">
+      <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Transaksi</span>
+    </button>
+    <button onclick="openTxModal()" class="flex flex-col items-center gap-1">
+      <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/30 -mt-4">
+        <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+      </div>
+    </button>
+    <button onclick="showPage('budget')" data-nav-mobile="budget" class="flex flex-col items-center gap-1 py-2 rounded-lg text-ink-400">
+      <i data-lucide="target" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Budget</span>
+    </button>
+    <button onclick="showPage('accounts')" data-nav-mobile="accounts" class="flex flex-col items-center gap-1 py-2 rounded-lg text-ink-400">
+      <i data-lucide="credit-card" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Akun</span>
+    </button>
+  </div>
+</nav>
+
+<script>
+  // Icon init
+  lucide.createIcons();
+
+  // Page switching
+  function showPage(page) {
+    document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+    const target = document.getElementById('page-' + page);
+    target.classList.remove('hidden');
+    target.classList.remove('page');
+    void target.offsetWidth;
+    target.classList.add('page');
+
+    // Update sidebar nav
+    document.querySelectorAll('[data-nav]').forEach(el => {
+      if (el.dataset.nav === page) {
+        el.className = 'nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium bg-brand-50 text-brand-700';
+      } else {
+        el.className = 'nav-item w-full flex items-center gap-3 px-2.5 lg:px-3 py-2.5 rounded-lg text-sm font-medium text-ink-500 hover:bg-ink-100';
+      }
+    });
+
+    // Update mobile nav
+    document.querySelectorAll('[data-nav-mobile]').forEach(el => {
+      if (el.dataset.navMobile === page) {
+        el.className = 'flex flex-col items-center gap-1 py-2 rounded-lg text-brand-600';
+      } else {
+        el.className = 'flex flex-col items-center gap-1 py-2 rounded-lg text-ink-400';
+      }
+    });
+
+    lucide.createIcons();
+    window.scrollTo(0, 0);
+
+    // Lazy init report charts (need visible canvas for correct sizing)
+    if (page === 'reports' && !window.__reportChartsInit) {
+      window.__reportChartsInit = true;
+      setTimeout(initReportCharts, 50);
+    }
+  }
+
+  // Init default nav state
+  showPage('dashboard');
+
+  // ===== Report Charts (lazy) =====
+  function initReportCharts() {
+    const trendCtx = document.getElementById('reportTrendChart');
+    if (trendCtx) {
+      new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+          datasets: [
+            {
+              label: 'Pemasukan',
+              data: [7200, 7500, 8200, 8000, 8300, 8500],
+              borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)',
+              borderWidth: 2, tension: 0.35, fill: true, pointRadius: 3, pointBackgroundColor: '#10b981'
+            },
+            {
+              label: 'Pengeluaran',
+              data: [3100, 3400, 2900, 3600, 3340, 3240],
+              borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.05)',
+              borderWidth: 2, tension: 0.35, fill: true, pointRadius: 3, pointBackgroundColor: '#f43f5e'
+            },
+            {
+              label: 'Savings',
+              data: [4100, 4100, 5300, 4400, 4960, 5260],
+              borderColor: '#8b5cf6', backgroundColor: 'transparent',
+              borderWidth: 2, borderDash: [5,4], tension: 0.35, pointRadius: 3, pointBackgroundColor: '#8b5cf6'
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a', padding: 10,
+              callbacks: { label: (ctx) => ctx.dataset.label + ': Rp ' + (ctx.parsed.y).toLocaleString() + 'k' }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+            y: {
+              grid: { color: '#f1f5f9' }, border: { display: false },
+              ticks: { color: '#94a3b8', font: { size: 11 }, callback: (v) => v >= 1000 ? (v/1000)+'M' : v+'k' }
+            }
+          }
+        }
+      });
+    }
+
+    const donutCtx = document.getElementById('categoryDonutChart');
+    if (donutCtx) {
+      new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Makanan', 'Transport', 'Belanja', 'Tagihan', 'Hiburan', 'Lainnya'],
+          datasets: [{
+            data: [980, 620, 480, 420, 320, 420],
+            backgroundColor: ['#f97316', '#8b5cf6', '#10b981', '#06b6d4', '#ec4899', '#94a3b8'],
+            borderWidth: 0, spacing: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '70%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a', padding: 10,
+              callbacks: { label: (ctx) => ctx.label + ': Rp ' + ctx.parsed + 'k' }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // ===== Transaction Modal =====
+  let feeEnabled = true;
+  let currentTxType = 'transfer';
+
+  function openTxModal() {
+    const m = document.getElementById('txModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    lucide.createIcons();
+  }
+
+  function closeTxModal() {
+    const m = document.getElementById('txModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+
+  function switchTxType(type) {
+    currentTxType = type;
+    document.querySelectorAll('[data-tx-tab]').forEach(el => {
+      if (el.dataset.txTab === type) {
+        el.className = 'tx-tab-btn py-2 text-xs font-medium rounded-lg bg-white text-brand-700 shadow-sm';
+      } else {
+        el.className = 'tx-tab-btn py-2 text-xs font-medium rounded-lg text-ink-500 transition';
+      }
+    });
+    lucide.createIcons();
+  }
+
+  function toggleFee() {
+    feeEnabled = !feeEnabled;
+    const btn = document.getElementById('feeToggle');
+    const section = document.getElementById('feeSection');
+    if (feeEnabled) {
+      btn.className = 'relative w-11 h-6 rounded-full bg-brand-600 transition flex-shrink-0';
+      btn.querySelector('span').className = 'absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-white shadow transition';
+      section.classList.remove('hidden');
+    } else {
+      btn.className = 'relative w-11 h-6 rounded-full bg-ink-300 transition flex-shrink-0';
+      btn.querySelector('span').className = 'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition';
+      section.classList.add('hidden');
+    }
+    updatePreview();
+  }
+
+  function parseRupiah(str) {
+    return parseInt(String(str).replace(/[^\d]/g, '')) || 0;
+  }
+
+  function formatRupiah(n) {
+    return n.toLocaleString('id-ID');
+  }
+
+  function updatePreview() {
+    const amount = parseRupiah(document.getElementById('txAmount').value);
+    const fee = feeEnabled ? parseRupiah(document.getElementById('txFee').value) : 0;
+    const totalOut = amount + fee;
+    document.getElementById('prevFrom').textContent = '- Rp ' + formatRupiah(totalOut);
+    document.getElementById('prevTo').textContent = '+ Rp ' + formatRupiah(amount);
+    document.getElementById('prevNet').textContent = fee > 0 ? '- Rp ' + formatRupiah(fee) : 'Rp 0 (netral)';
+    document.getElementById('prevNet').className = fee > 0
+      ? 'text-xs font-semibold text-rose-600'
+      : 'text-xs font-semibold text-ink-500';
+  }
+
+  // ESC to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeTxModal(); hideAuth(); }
+  });
+
+  // ===== Auth Pages =====
+  function showAuth(page) {
+    document.getElementById('authShell').classList.remove('hidden');
+    switchAuth(page || 'login');
+    document.body.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
+    lucide.createIcons();
+  }
+
+  function hideAuth() {
+    document.getElementById('authShell').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function switchAuth(page) {
+    document.getElementById('auth-login').classList.toggle('hidden', page !== 'login');
+    document.getElementById('auth-register').classList.toggle('hidden', page !== 'register');
+    // Preserve grid display when not hidden
+    if (page === 'login') document.getElementById('auth-login').classList.remove('hidden');
+    if (page === 'register') document.getElementById('auth-register').classList.remove('hidden');
+    lucide.createIcons();
+    window.scrollTo(0, 0);
+  }
+
+  function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.innerHTML = input.type === 'password'
+      ? '<i data-lucide="eye" class="w-4 h-4"></i>'
+      : '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+    lucide.createIcons();
+  }
+
+  // Cashflow Chart
+  const ctx = document.getElementById('cashflowChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+        datasets: [
+          {
+            label: 'Pemasukan',
+            data: [7200, 7500, 8200, 8000, 8300, 8500],
+            backgroundColor: '#8b5cf6',
+            borderRadius: 6,
+            barPercentage: 0.55,
+            categoryPercentage: 0.6
+          },
+          {
+            label: 'Pengeluaran',
+            data: [3100, 3400, 2900, 3600, 3200, 3240],
+            backgroundColor: '#e2e8f0',
+            borderRadius: 6,
+            barPercentage: 0.55,
+            categoryPercentage: 0.6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            padding: 10,
+            titleFont: { size: 12 },
+            bodyFont: { size: 12 },
+            callbacks: {
+              label: function(ctx) {
+                return ctx.dataset.label + ': Rp ' + ctx.parsed.y.toLocaleString() + 'k';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 }, color: '#94a3b8' }
+          },
+          y: {
+            grid: { color: '#f1f5f9' },
+            ticks: {
+              font: { size: 11 },
+              color: '#94a3b8',
+              callback: function(v) { return v >= 1000 ? (v/1000) + 'M' : v + 'k'; }
+            },
+            border: { display: false }
+          }
+        }
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

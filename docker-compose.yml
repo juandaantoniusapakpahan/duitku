@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: duitku-postgres
+    environment:
+      POSTGRES_DB: duitku
+      POSTGRES_USER: duitku
+      POSTGRES_PASSWORD: duitku
+    ports:
+      - "5432:5432"
+    volumes:
+      - duitku-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U duitku -d duitku"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: duitku-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/duitku
+      DB_USERNAME: duitku
+      DB_PASSWORD: duitku
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me-please-32bytes-min}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:5173}
+    ports:
+      - "8080:8080"
+    profiles: ["full"]
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: duitku-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    profiles: ["full"]
+
+volumes:
+  duitku-postgres-data:
