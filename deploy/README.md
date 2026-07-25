@@ -12,11 +12,48 @@ Estimasi biaya: **$0/bulan** selama 12 bulan pertama (AWS Free Tier), ~$25/bulan
 
 ## 1. Database — RDS PostgreSQL
 
-1. Buka RDS console → **Create database** → PostgreSQL, template **Free tier**.
-2. Instance class `db.t3.micro`, storage 20GB.
-3. Set master username/password (dipakai untuk `DB_USERNAME` / `DB_PASSWORD` nanti).
-4. Setelah dibuat, catat endpoint-nya (`<db-id>.xxxxx.<region>.rds.amazonaws.com`).
-5. Di security group RDS, izinkan inbound port 5432 dari security group Elastic Beanstalk (setup di langkah 2).
+1. Login ke AWS Console, pastikan region di pojok kanan atas = **Asia Pacific (Singapore) `ap-southeast-1`** (harus sama dengan region EB di langkah 2 nanti — beda region = tidak bisa connect).
+2. Search **RDS** di search bar atas → buka service RDS.
+3. Sidebar kiri → **Databases** → tombol **Create database**.
+4. **Choose a database creation method** → pilih **Standard create** (bukan *Easy create*, biar semua opsi di bawah bisa diatur manual).
+5. **Engine options**:
+   - Engine type: **PostgreSQL**
+   - Engine version: pilih versi **16.x** terbaru yang tersedia (samain dengan Postgres lokal di `docker-compose.yml`).
+6. **Templates** → pilih **Free tier** (ini otomatis mengunci beberapa pilihan supaya tetap gratis).
+7. **Settings**:
+   - DB instance identifier: `duitku-db`
+   - Master username: `duitku`
+   - Credentials management: **Self managed** → isi Master password (password kuat, beda dari password lokal `duitku`/`duitku` di docker-compose) → Confirm password. **Catat password ini di password manager** — AWS tidak akan menampilkannya lagi.
+8. **Instance configuration** → pastikan yang terpilih `db.t3.micro` (burstable class, ini yang free tier eligible).
+9. **Storage**:
+   - Storage type: General Purpose SSD (gp2/gp3)
+   - Allocated storage: `20` GiB
+   - **Matikan** "Enable storage autoscaling" — biar tidak diam-diam nambah storage (dan biaya) di luar free tier.
+10. **Connectivity**:
+    - Compute resource: **Don't connect to an EC2 compute resource** (EB belum ada di tahap ini)
+    - VPC: **Default VPC**
+    - DB subnet group: default
+    - Public access: **No** (lebih aman — nanti EB connect lewat security group di VPC yang sama, bukan lewat internet)
+    - VPC security group: **Create new** → nama `duitku-rds-sg`
+    - Availability Zone: No preference
+    - Database port: `5432` (default)
+11. **Database authentication** → **Password authentication** (default, jangan pilih IAM/Kerberos).
+12. Expand **Additional configuration**:
+    - **Initial database name**: `duitku` — ⚠️ ini wajib diisi, kalau kosong instance-nya jadi tapi database `duitku`-nya tidak otomatis ke-create.
+    - Backup retention: default 7 hari sudah oke, boleh dikecilkan ke 1 hari kalau mau lebih hemat storage backup.
+    - **Matikan** "Enable Performance Insights" untuk MVP $0/bulan.
+13. Klik **Create database**. Tunggu ~5–10 menit sampai status berubah jadi **Available**.
+14. Klik nama instance-nya → tab **Connectivity & security** → catat:
+    - **Endpoint**, contoh: `duitku-db.xxxxxxxxxxxx.ap-southeast-1.rds.amazonaws.com`
+    - **Port**: `5432`
+
+    Ini dipakai sebagai `DB_URL=jdbc:postgresql://<endpoint>:5432/duitku` di langkah `eb setenv` (langkah 2.5).
+15. **Setelah** environment EB dibuat di langkah 2: balik ke EC2 console → **Security Groups** → cari `duitku-rds-sg` → tab **Inbound rules** → **Edit inbound rules** → **Add rule**:
+    - Type: **PostgreSQL** (otomatis isi port 5432)
+    - Source: pilih **security group milik environment EB** (bukan `0.0.0.0/0` — jangan buka RDS ke seluruh internet)
+    - Save rules.
+
+**Biaya:** free tier RDS mencakup 750 jam/bulan `db.t3.micro` + 20GB storage + 20GB backup selama 12 bulan pertama. Setelah itu ~$12–15/bulan untuk instance ini saja.
 
 ## 2. Backend — Elastic Beanstalk
 

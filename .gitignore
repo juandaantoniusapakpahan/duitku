@@ -12,3 +12,9 @@ frontend/.env
 .vscode/
 *.iml
 .DS_Store
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+deploy.zip
