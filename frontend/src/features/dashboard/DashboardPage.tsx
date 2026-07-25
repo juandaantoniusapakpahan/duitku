@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import {
@@ -25,6 +25,7 @@ import type { Transaction } from '../transactions/types';
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
   const { data, isLoading } = useDashboard();
   const { data: trend } = useCashflowTrend(6);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -311,7 +312,7 @@ export default function DashboardPage() {
           ) : (
             <div className="divide-y divide-ink-100">
               {data.recent_transactions.map((tx: Transaction) => (
-                <TransactionRow key={tx.id} item={{ transaction: tx, fee: null }} />
+                <TransactionRow key={tx.id} item={{ transaction: tx, fee: null }} onEdit={() => navigate('/transactions')} />
               ))}
             </div>
           )}

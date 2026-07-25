@@ -97,13 +97,30 @@ EB single-instance defaultnya HTTP saja. Ini **bukan cuma soal keamanan** — du
 - `Secure` cookie (langkah 5) tidak akan pernah terkirim balik ke server lewat HTTP.
 - Amplify otomatis HTTPS, dan browser **memblokir** (bukan cuma warning) request fetch/XHR dari halaman HTTPS ke endpoint HTTP (mixed content).
 
-Cara termurah yang tetap masuk free tier: taruh **CloudFront** di depan endpoint HTTP EB, pakai sertifikat ACM gratis.
+**Opsi A — CloudFront** (idealnya, kalau akun AWS kamu sudah "verified"): taruh CloudFront di depan endpoint HTTP EB.
 
-1. ACM (region **us-east-1**, wajib untuk CloudFront) → request certificate untuk domain backend kamu (atau pakai domain default CloudFront kalau belum punya domain sendiri).
-2. CloudFront → **Create distribution** → origin domain = URL EB dari langkah 7 (`duitku-backend-env.xxxxx.elasticbeanstalk.com`), origin protocol **HTTP only**, viewer protocol **Redirect HTTP to HTTPS**.
-3. Cache policy: pakai **CachingDisabled** (API tidak boleh di-cache) dan pastikan origin request policy meneruskan semua header, cookie, dan query string (`AllViewer`).
-4. Setelah distribusi aktif, pakai domain CloudFront-nya (`https://dxxxxxxx.cloudfront.net`) sebagai base URL backend — ganti `VITE_API_BASE_URL` di Amplify dan `CORS_ALLOWED_ORIGIN` tetap ke domain Amplify.
-5. Verifikasi: buka `https://dxxxxxxx.cloudfront.net/actuator/health` harus `{"status":"UP"}` lewat HTTPS.
+1. CloudFront → **Create distribution** → origin domain = URL EB dari langkah 7, origin protocol **HTTP only**, viewer protocol **Redirect HTTP to HTTPS**.
+2. Cache policy **CachingDisabled**, origin request policy **AllViewer** (supaya cookie & header ikut ke-forward).
+3. Domain CloudFront-nya (`https://dxxxxxxx.cloudfront.net`) otomatis dapat HTTPS, tidak perlu ACM/domain sendiri.
+
+Catatan: akun AWS baru sering kena `AccessDenied: Your account must be verified before you can add new CloudFront resources` — kalau kejadian, harus buka tiket ke AWS Support dulu (gratis, tapi butuh waktu). Kalau lagi keburu, pakai Opsi B.
+
+**Opsi B — API Gateway HTTP API** (dipakai di setup ini, tidak kena blokir verifikasi CloudFront, tidak perlu domain sendiri, gratis untuk trafik personal):
+
+```bash
+aws apigatewayv2 create-api \
+  --name duitku-backend-proxy \
+  --protocol-type HTTP \
+  --target "http://<eb-domain-dari-langkah-7>" \
+  --region ap-southeast-1
+```
+Command ini otomatis bikin API + integration (proxy transparan ke EB) + route + stage `$default` sekaligus, dan langsung live di `ApiEndpoint` yang dikembalikan (`https://<api-id>.execute-api.ap-southeast-1.amazonaws.com`) — itu dipakai sebagai base URL backend.
+
+Verifikasi (opsi manapun yang dipakai):
+```bash
+curl https://<domain-https-backend>/actuator/health
+# harus balas {"status":"UP"}
+```
 
 ## 3. Frontend — AWS Amplify Hosting
 
@@ -111,9 +128,9 @@ Cara termurah yang tetap masuk free tier: taruh **CloudFront** di depan endpoint
 2. Buka Amplify console → **New app** → **Host web app** → connect ke repo GitHub ini, pilih branch.
 3. Amplify akan mendeteksi `deploy/aws-amplify.yml` — kalau tidak otomatis, set build settings manual sesuai isi file itu (root directory tetap repo root, `baseDirectory: frontend/dist`).
 4. Set environment variable di Amplify console:
-   - `VITE_API_BASE_URL` = `https://<cloudfront-domain>/api/v1` (domain CloudFront dari langkah 2b — **jangan** domain EB langsung, harus HTTPS)
+   - `VITE_API_BASE_URL` = `https://<domain-https-backend-dari-langkah-2b>/api/v1` (**jangan** domain EB langsung, harus HTTPS — via CloudFront atau API Gateway)
 5. Deploy — Amplify otomatis build & publish tiap kali push ke branch yang dipilih.
-6. Setelah dapat domain Amplify, balik ke langkah 2.5 dan update `CORS_ALLOWED_ORIGIN` di EB biar match.
+6. Setelah dapat domain Amplify, balik ke langkah 2.5 dan update `CORS_ALLOWED_ORIGIN` di EB (`eb setenv CORS_ALLOWED_ORIGIN=https://<domain-amplify>`) biar match — tanpa ini, browser akan nolak response dari backend karena CORS mismatch.
 
 ## 4. CI/CD
 
@@ -150,7 +167,7 @@ Yang perlu disiapkan sebelum workflow ini bisa jalan:
 
 - Buka domain Amplify → coba register/login → refresh halaman, pastikan tetap login (ini yang membuktikan refresh-token cookie benar-benar terkirim cross-site, bukan cuma login awal yang sukses).
 - DevTools → Application → Cookies → cek `duitku_refresh_token` punya `Secure` ✓ dan `SameSite=None`.
-- Cek Swagger backend masih bisa diakses: `https://<cloudfront-domain>/swagger-ui.html`.
+- Cek Swagger backend masih bisa diakses: `https://<domain-https-backend>/swagger-ui.html`.
 
 ## Catatan
 
