@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -40,6 +40,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
   const logout = useLogout();
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const initials = (user?.full_name ?? '?')
     .split(' ')
     .map((part) => part[0])
@@ -155,14 +156,37 @@ export default function AppShell({ children }: { children: ReactNode }) {
               </div>
               <span className="font-semibold text-[15px]">Duitku</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 relative">
               <button className="w-9 h-9 rounded-full hover:bg-ink-100 flex items-center justify-center relative">
                 <Bell className="w-[18px] h-[18px] text-ink-600" />
                 <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
               </button>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setShowMobileMenu((v) => !v)}
+                className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-semibold"
+              >
                 {initials}
-              </div>
+              </button>
+              {showMobileMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMobileMenu(false)} />
+                  <div className="absolute right-0 top-full mt-2 z-50 w-56 bg-white border border-ink-200 rounded-xl shadow-lg py-2">
+                    <div className="px-3 py-2 border-b border-ink-200">
+                      <p className="text-sm font-medium truncate">{user?.full_name ?? ''}</p>
+                      <p className="text-xs text-ink-500 truncate">{user?.email ?? ''}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-600 hover:bg-ink-100 text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </header>
