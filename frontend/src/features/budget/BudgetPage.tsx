@@ -6,10 +6,12 @@ import { formatIDR } from '../../lib/currency';
 import { useBudgets } from './useBudgets';
 import BudgetCard from './BudgetCard';
 import AddBudgetModal from './AddBudgetModal';
+import type { BudgetProgress } from './types';
 
 export default function BudgetPage() {
   const { data: budgets = [], isLoading } = useBudgets();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<BudgetProgress | null>(null);
   const monthLabel = format(new Date(), 'MMMM yyyy', { locale: id });
 
   const totals = useMemo(() => {
@@ -139,7 +141,7 @@ export default function BudgetPage() {
       {/* Budget Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {budgets.map((item) => (
-          <BudgetCard key={item.budget.id} item={item} />
+          <BudgetCard key={item.budget.id} item={item} onEdit={() => setEditingBudget(item)} />
         ))}
 
         <button
@@ -179,6 +181,7 @@ export default function BudgetPage() {
       </div>
 
       {showAddModal && <AddBudgetModal onClose={() => setShowAddModal(false)} />}
+      {editingBudget && <AddBudgetModal budget={editingBudget} onClose={() => setEditingBudget(null)} />}
     </div>
   );
 }

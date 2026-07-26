@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { useCategories } from '../categories/useCategories';
 import CategoryPicker from '../transactions/CategoryPicker';
-import { useCreateBudget } from './useBudgets';
-import type { BudgetPeriod } from './types';
+import { useCreateBudget, useUpdateBudget } from './useBudgets';
+import type { BudgetPeriod, BudgetProgress } from './types';
 
 const PERIOD_LABELS: Record<BudgetPeriod, string> = {
   WEEKLY: 'Mingguan',
@@ -21,19 +21,32 @@ function formatRupiahInput(str: string): string {
   return n ? n.toLocaleString('id-ID') : '';
 }
 
-export default function AddBudgetModal({ onClose }: { onClose: () => void }) {
+export default function AddBudgetModal({
+  budget,
+  onClose,
+}: {
+  budget?: BudgetProgress;
+  onClose: () => void;
+}) {
+  const isEdit = Boolean(budget);
   const { data: categories = [] } = useCategories('EXPENSE');
   const createBudget = useCreateBudget();
+  const updateBudget = useUpdateBudget();
 
-  const [categoryId, setCategoryId] = useState<string>();
-  const [period, setPeriod] = useState<BudgetPeriod>('MONTHLY');
-  const [amountRaw, setAmountRaw] = useState('');
+  const [categoryId, setCategoryId] = useState<string | undefined>(budget?.budget.category?.id);
+  const [period, setPeriod] = useState<BudgetPeriod>(budget?.budget.period ?? 'MONTHLY');
+  const [amountRaw, setAmountRaw] = useState(budget ? String(budget.budget.amount) : '');
 
   const amount = parseRupiah(amountRaw);
   const canSubmit = useMemo(() => Boolean(categoryId) && amount > 0, [categoryId, amount]);
 
   const handleSubmit = () => {
-    if (!canSubmit || !categoryId) return;
+    if (!canSubmit) return;
+    if (isEdit && budget) {
+      updateBudget.mutate({ id: budget.budget.id, payload: { amount } }, { onSuccess: onClose });
+      return;
+    }
+    if (!categoryId) return;
     createBudget.mutate({ categoryId, period, amount }, { onSuccess: onClose });
   };
 
@@ -42,7 +55,7 @@ export default function AddBudgetModal({ onClose }: { onClose: () => void }) {
       <div onClick={onClose} className="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" />
       <div className="relative bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-3xl shadow-2xl max-h-[92vh] overflow-hidden flex flex-col animate-slideup">
         <div className="flex items-center justify-between px-5 py-4 border-b border-ink-200 flex-shrink-0">
-          <h3 className="text-base font-semibold">Set budget</h3>
+          <h3 className="text-base font-semibold">{isEdit ? 'Edit budget' : 'Set budget'}</h3>
           <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-ink-100 flex items-center justify-center">
             <X className="w-5 h-5 text-ink-500" />
           </button>
@@ -51,12 +64,18 @@ export default function AddBudgetModal({ onClose }: { onClose: () => void }) {
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
           <div>
             <label className="text-xs text-ink-500 block mb-2">Kategori</label>
-            <CategoryPicker categories={categories} value={categoryId} onChange={setCategoryId} />
+            {isEdit ? (
+              <div className="px-4 py-2.5 border border-ink-200 rounded-xl text-sm text-ink-500 bg-ink-50">
+                {budget?.budget.category?.name ?? 'Kategori'}
+              </div>
+            ) : (
+              <CategoryPicker categories={categories} value={categoryId} onChange={setCategoryId} />
+            )}
           </div>
 
           <div>
             <label className="text-xs text-ink-500 block mb-2">Periode</label>
-            <div className="grid grid-cols-3 p-1 bg-ink-100 rounded-xl">
+            <div className={`grid grid-cols-3 p-1 bg-ink-100 rounded-xl ${isEdit ? 'opacity-60 pointer-events-none' : ''}`}>
               {(Object.keys(PERIOD_LABELS) as BudgetPeriod[]).map((p) => (
                 <button
                   key={p}
@@ -70,6 +89,11 @@ export default function AddBudgetModal({ onClose }: { onClose: () => void }) {
                 </button>
               ))}
             </div>
+            {isEdit && (
+              <p className="text-[11px] text-ink-400 mt-1.5">
+                Kategori dan periode tidak bisa diubah. Hapus budget ini lalu buat ulang kalau salah.
+              </p>
+            )}
           </div>
 
           <div>
@@ -87,7 +111,7 @@ export default function AddBudgetModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {createBudget.isError && (
+          {(createBudget.isError || updateBudget.isError) && (
             <p className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
               Gagal menyimpan budget. Coba lagi.
             </p>
@@ -100,10 +124,14 @@ export default function AddBudgetModal({ onClose }: { onClose: () => void }) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!canSubmit || createBudget.isPending}
+            disabled={!canSubmit || createBudget.isPending || updateBudget.isPending}
             className="flex-1 py-2.5 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm disabled:opacity-60"
           >
-            {createBudget.isPending ? 'Menyimpan...' : 'Simpan'}
+            {createBudget.isPending || updateBudget.isPending
+              ? 'Menyimpan...'
+              : isEdit
+                ? 'Simpan perubahan'
+                : 'Simpan'}
           </button>
         </div>
       </div>

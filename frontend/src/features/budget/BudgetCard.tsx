@@ -1,6 +1,8 @@
-import { AlertCircle, AlertTriangle, CheckCircle2, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { AlertCircle, AlertTriangle, CheckCircle2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { formatIDRCompact } from '../../lib/currency';
 import { getColorClasses, getIcon } from '../../lib/icons';
+import { useDeleteBudget } from './useBudgets';
 import type { BudgetProgress } from './types';
 
 const STATUS_META = {
@@ -15,13 +17,16 @@ const PERIOD_LABELS: Record<BudgetProgress['budget']['period'], string> = {
   YEARLY: 'tahunan',
 };
 
-export default function BudgetCard({ item }: { item: BudgetProgress }) {
+export default function BudgetCard({ item, onEdit }: { item: BudgetProgress; onEdit: () => void }) {
   const category = item.budget.category;
   const Icon = getIcon(category?.icon ?? 'wallet');
   const colors = getColorClasses(category?.color ?? 'ink');
   const meta = STATUS_META[item.status];
   const isOver = item.status === 'over';
   const StatusIcon = meta.Icon;
+  const [showMenu, setShowMenu] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteBudget = useDeleteBudget();
 
   return (
     <div className={`bg-white rounded-2xl p-5 card-hover ${isOver ? 'border-2 border-rose-300' : 'border border-ink-200'}`}>
@@ -35,9 +40,59 @@ export default function BudgetCard({ item }: { item: BudgetProgress }) {
             <p className="text-[11px] text-ink-500">Periode {PERIOD_LABELS[item.budget.period]}</p>
           </div>
         </div>
-        <button className="text-ink-400 hover:text-ink-600">
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowMenu((v) => !v)}
+            className="text-ink-400 hover:text-ink-600"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+          {showMenu && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+              <div className="absolute right-0 top-full mt-1 z-50 w-40 bg-white border border-ink-200 rounded-xl shadow-lg py-1">
+                {confirmingDelete ? (
+                  <div className="px-3 py-2 flex items-center gap-2">
+                    <button
+                      onClick={() => setConfirmingDelete(false)}
+                      className="flex-1 px-2 py-1.5 text-xs font-medium text-ink-600 hover:bg-ink-100 rounded-lg transition"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      onClick={() => deleteBudget.mutate(item.budget.id)}
+                      disabled={deleteBudget.isPending}
+                      className="flex-1 px-2 py-1.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition disabled:opacity-60"
+                    >
+                      {deleteBudget.isPending ? '...' : 'Hapus?'}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        onEdit();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-ink-100 text-left"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-ink-500" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setConfirmingDelete(true)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-600 hover:bg-ink-100 text-left"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Hapus
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
       <div className="flex items-baseline justify-between mb-2">
         <div>

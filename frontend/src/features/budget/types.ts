@@ -26,3 +26,8 @@ export interface CreateBudgetPayload {
   period: BudgetPeriod;
   amount: number;
 }
+
+export interface UpdateBudgetPayload {
+  amount?: number;
+  endDate?: string;
+}
