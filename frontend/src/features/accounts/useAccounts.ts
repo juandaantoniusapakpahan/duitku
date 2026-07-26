@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import type { Account, CreateAccountPayload } from './types';
+import type { Account, CreateAccountPayload, UpdateAccountPayload } from './types';
 
 const ACCOUNTS_KEY = ['accounts'];
 
@@ -27,6 +27,23 @@ export function useCreateAccount() {
         current_value: payload.currentValue,
         icon: payload.icon,
         color: payload.color,
+        account_number_masked: payload.accountNumberMasked,
+      });
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ACCOUNTS_KEY }),
+  });
+}
+
+export function useUpdateAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: UpdateAccountPayload }) => {
+      const { data } = await api.patch<Account>(`/accounts/${id}`, {
+        name: payload.name,
+        current_balance: payload.currentBalance,
+        cost_basis: payload.costBasis,
+        current_value: payload.currentValue,
         account_number_masked: payload.accountNumberMasked,
       });
       return data;

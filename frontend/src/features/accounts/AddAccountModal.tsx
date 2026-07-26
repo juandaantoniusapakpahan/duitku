@@ -3,8 +3,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X } from 'lucide-react';
 import { getIcon } from '../../lib/icons';
-import { useCreateAccount } from './useAccounts';
+import { useCreateAccount, useUpdateAccount } from './useAccounts';
 import { ACCOUNT_TYPE_META, ACCOUNT_TYPE_ORDER } from './constants';
+import type { Account } from './types';
 
 const ACCOUNT_TYPES = ACCOUNT_TYPE_ORDER.map((value) => ({ value, ...ACCOUNT_TYPE_META[value] }));
 
@@ -25,21 +26,51 @@ function toNumber(value: string | undefined): number | undefined {
   return digits ? Number(digits) : undefined;
 }
 
-export default function AddAccountModal({ onClose }: { onClose: () => void }) {
+export default function AddAccountModal({ account, onClose }: { account?: Account; onClose: () => void }) {
+  const isEdit = Boolean(account);
   const createAccount = useCreateAccount();
+  const updateAccount = useUpdateAccount();
   const {
     register,
     handleSubmit,
     watch,
     setValue,
     formState: { errors },
-  } = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { type: 'BANK' } });
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: account
+      ? {
+          name: account.name,
+          type: account.type,
+          currentBalance: account.type !== 'INVESTMENT' ? String(account.current_balance) : undefined,
+          costBasis: account.cost_basis != null ? String(account.cost_basis) : undefined,
+          currentValue: account.current_value != null ? String(account.current_value) : undefined,
+          accountNumberMasked: account.account_number_masked ?? undefined,
+        }
+      : { type: 'BANK' },
+  });
 
   const selectedType = watch('type');
   const isInvestment = selectedType === 'INVESTMENT';
   const showAccountNumber = selectedType === 'BANK' || selectedType === 'EWALLET';
 
   const onSubmit = (values: FormValues) => {
+    if (isEdit && account) {
+      updateAccount.mutate(
+        {
+          id: account.id,
+          payload: {
+            name: values.name,
+            currentBalance: isInvestment ? toNumber(values.currentValue) : toNumber(values.currentBalance),
+            costBasis: isInvestment ? toNumber(values.costBasis) : undefined,
+            currentValue: isInvestment ? toNumber(values.currentValue) : undefined,
+            accountNumberMasked: values.accountNumberMasked || undefined,
+          },
+        },
+        { onSuccess: onClose },
+      );
+      return;
+    }
     const meta = ACCOUNT_TYPES.find((t) => t.value === values.type)!;
     createAccount.mutate(
       {
@@ -61,7 +92,7 @@ export default function AddAccountModal({ onClose }: { onClose: () => void }) {
       <div onClick={onClose} className="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" />
       <div className="relative bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl shadow-2xl max-h-[92vh] overflow-hidden flex flex-col animate-slideup">
         <div className="flex items-center justify-between px-5 py-4 border-b border-ink-200 flex-shrink-0">
-          <h3 className="text-base font-semibold">Tambah akun</h3>
+          <h3 className="text-base font-semibold">{isEdit ? 'Edit akun' : 'Tambah akun'}</h3>
           <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-ink-100 flex items-center justify-center">
             <X className="w-5 h-5 text-ink-500" />
           </button>
@@ -70,7 +101,7 @@ export default function AddAccountModal({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto px-5 py-5 space-y-5" noValidate>
           <div>
             <label className="text-xs text-ink-500 block mb-2">Tipe akun</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className={`grid grid-cols-4 gap-2 ${isEdit ? 'opacity-60 pointer-events-none' : ''}`}>
               {ACCOUNT_TYPES.map((t) => {
                 const Icon = getIcon(t.icon);
                 const active = selectedType === t.value;
@@ -91,6 +122,11 @@ export default function AddAccountModal({ onClose }: { onClose: () => void }) {
                 );
               })}
             </div>
+            {isEdit && (
+              <p className="text-[11px] text-ink-400 mt-1.5">
+                Tipe akun tidak bisa diubah. Hapus akun ini lalu buat ulang kalau salah.
+              </p>
+            )}
           </div>
 
           <div>
@@ -122,7 +158,9 @@ export default function AddAccountModal({ onClose }: { onClose: () => void }) {
 
           {!isInvestment && (
             <div>
-              <label className="text-sm font-medium block mb-1.5" htmlFor="currentBalance">Saldo awal</label>
+              <label className="text-sm font-medium block mb-1.5" htmlFor="currentBalance">
+                {isEdit ? 'Saldo saat ini' : 'Saldo awal'}
+              </label>
               <div className="flex items-baseline gap-2 px-4 py-2.5 border border-ink-200 rounded-xl focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500">
                 <span className="text-sm text-ink-500">Rp</span>
                 <input
@@ -170,9 +208,9 @@ export default function AddAccountModal({ onClose }: { onClose: () => void }) {
             </>
           )}
 
-          {createAccount.isError && (
+          {(createAccount.isError || updateAccount.isError) && (
             <p className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
-              Gagal menambah akun. Coba lagi.
+              Gagal menyimpan akun. Coba lagi.
             </p>
           )}
         </form>
@@ -188,10 +226,14 @@ export default function AddAccountModal({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={handleSubmit(onSubmit)}
-            disabled={createAccount.isPending}
+            disabled={createAccount.isPending || updateAccount.isPending}
             className="flex-1 py-2.5 bg-ink-900 hover:bg-ink-800 text-white text-sm font-medium rounded-xl transition shadow-sm disabled:opacity-60"
           >
-            {createAccount.isPending ? 'Menyimpan...' : 'Simpan'}
+            {createAccount.isPending || updateAccount.isPending
+              ? 'Menyimpan...'
+              : isEdit
+                ? 'Simpan perubahan'
+                : 'Simpan'}
           </button>
         </div>
       </div>

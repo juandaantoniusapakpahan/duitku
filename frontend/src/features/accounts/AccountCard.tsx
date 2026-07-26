@@ -1,14 +1,27 @@
-import { ArrowLeftRight, ChartBar, EyeOff, Pencil, RefreshCw, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeftRight, ChartBar, EyeOff, MoreHorizontal, Pencil, RefreshCw, Trash2, TrendingUp } from 'lucide-react';
 import { formatIDR } from '../../lib/currency';
 import { getColorClasses, getIcon } from '../../lib/icons';
 import { ACCOUNT_TYPE_META } from './constants';
+import { useDeleteAccount } from './useAccounts';
 import type { Account } from './types';
 
-export default function AccountCard({ account, onToggleHide }: { account: Account; onToggleHide: (id: string) => void }) {
+export default function AccountCard({
+  account,
+  onEdit,
+  onToggleHide,
+}: {
+  account: Account;
+  onEdit: () => void;
+  onToggleHide: (id: string) => void;
+}) {
   const meta = ACCOUNT_TYPE_META[account.type];
   const Icon = getIcon(account.icon);
   const colors = getColorClasses(account.color);
   const isInvestment = account.type === 'INVESTMENT';
+  const [showMenu, setShowMenu] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteAccount = useDeleteAccount();
 
   const gain = isInvestment ? (account.current_value ?? 0) - (account.cost_basis ?? 0) : 0;
   const gainPct = isInvestment && account.cost_basis ? (gain / account.cost_basis) * 100 : 0;
@@ -29,16 +42,59 @@ export default function AccountCard({ account, onToggleHide }: { account: Accoun
               </p>
             </div>
           </div>
-          {isInvestment && account.cost_basis ? (
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                gain >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-              }`}
-            >
-              {gain >= 0 ? '+' : ''}
-              {gainPct.toFixed(1)}%
-            </span>
-          ) : null}
+          <div className="flex items-center gap-1.5">
+            {isInvestment && account.cost_basis ? (
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                  gain >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                }`}
+              >
+                {gain >= 0 ? '+' : ''}
+                {gainPct.toFixed(1)}%
+              </span>
+            ) : null}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowMenu((v) => !v)}
+                className="w-7 h-7 rounded-lg hover:bg-ink-100 flex items-center justify-center text-ink-400 hover:text-ink-600"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 z-50 w-40 bg-white border border-ink-200 rounded-xl shadow-lg py-1">
+                    {confirmingDelete ? (
+                      <div className="px-3 py-2 flex items-center gap-2">
+                        <button
+                          onClick={() => setConfirmingDelete(false)}
+                          className="flex-1 px-2 py-1.5 text-xs font-medium text-ink-600 hover:bg-ink-100 rounded-lg transition"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          onClick={() => deleteAccount.mutate(account.id)}
+                          disabled={deleteAccount.isPending}
+                          className="flex-1 px-2 py-1.5 text-xs font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition disabled:opacity-60"
+                        >
+                          {deleteAccount.isPending ? '...' : 'Hapus?'}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmingDelete(true)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-600 hover:bg-ink-100 text-left"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Hapus akun
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className={isInvestment ? 'mb-3' : 'mb-4'}>
@@ -66,9 +122,8 @@ export default function AccountCard({ account, onToggleHide }: { account: Accoun
               Update
             </button>
             <button
-              disabled
-              title="Segera hadir"
-              className="py-2.5 text-xs font-medium text-ink-300 cursor-not-allowed flex items-center justify-center gap-1.5"
+              onClick={onEdit}
+              className="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"
             >
               <Pencil className="w-3.5 h-3.5" />
               Edit
@@ -93,9 +148,8 @@ export default function AccountCard({ account, onToggleHide }: { account: Accoun
               Transaksi
             </button>
             <button
-              disabled
-              title="Segera hadir"
-              className="py-2.5 text-xs font-medium text-ink-300 cursor-not-allowed flex items-center justify-center gap-1.5"
+              onClick={onEdit}
+              className="py-2.5 text-xs font-medium text-ink-600 hover:bg-ink-50 transition flex items-center justify-center gap-1.5"
             >
               <Pencil className="w-3.5 h-3.5" />
               Edit

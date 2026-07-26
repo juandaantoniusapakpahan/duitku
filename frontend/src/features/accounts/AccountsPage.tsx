@@ -19,6 +19,7 @@ export default function AccountsPage() {
   const [filter, setFilter] = useState<AccountType | 'ALL'>('ALL');
   const [showHiddenOnly, setShowHiddenOnly] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
   const visibleAccounts = useMemo(
     () => accounts.filter((a) => (showHiddenOnly ? a.hidden : !a.hidden)),
@@ -191,7 +192,12 @@ export default function AccountsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {grouped.get(type)?.map((account) => (
-                  <AccountCard key={account.id} account={account} onToggleHide={(id) => toggleHide.mutate(id)} />
+                  <AccountCard
+                    key={account.id}
+                    account={account}
+                    onEdit={() => setEditingAccount(account)}
+                    onToggleHide={(id) => toggleHide.mutate(id)}
+                  />
                 ))}
               </div>
             </div>
@@ -200,6 +206,9 @@ export default function AccountsPage() {
       )}
 
       {showAddModal && <AddAccountModal onClose={() => setShowAddModal(false)} />}
+      {editingAccount && (
+        <AddAccountModal account={editingAccount} onClose={() => setEditingAccount(null)} />
+      )}
     </div>
   );
 }

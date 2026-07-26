@@ -27,3 +27,11 @@ export interface CreateAccountPayload {
   color: string;
   accountNumberMasked?: string;
 }
+
+export interface UpdateAccountPayload {
+  name?: string;
+  currentBalance?: number;
+  costBasis?: number;
+  currentValue?: number;
+  accountNumberMasked?: string;
+}
