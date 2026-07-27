@@ -105,6 +105,7 @@ export default function AddTransactionModal({
       type,
       amount,
       occurredAt: toOccurredAtIso(occurredAtStr),
+      description: description || undefined,
       notes: notes || undefined,
     };
     if (type === 'TRANSFER') {
@@ -152,18 +153,16 @@ export default function AddTransactionModal({
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
-          {isEdit && (
-            <div>
-              <label className="text-xs text-ink-500 block mb-1.5">Deskripsi</label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="cth. Makan siang, Gaji Juli"
-                className="w-full px-3 py-2.5 text-sm border border-ink-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none"
-              />
-            </div>
-          )}
+          <div>
+            <label className="text-xs text-ink-500 block mb-1.5">Deskripsi</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="cth. Makan siang, Gaji Juli"
+              className="w-full px-3 py-2.5 text-sm border border-ink-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none"
+            />
+          </div>
 
           {/* Amount */}
           <div>
