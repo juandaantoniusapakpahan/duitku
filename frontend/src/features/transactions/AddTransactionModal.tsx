@@ -25,6 +25,15 @@ function formatRupiahInput(str: string): string {
   return n ? n.toLocaleString('id-ID') : '';
 }
 
+// `new Date("yyyy-MM-dd")` is parsed as UTC midnight per the ECMA spec, which lands on
+// 07:00 in WIB — combine the picked date with a time-of-day instead (current time for new
+// transactions, the original time when editing) so the timestamp stays sensible.
+function toOccurredAtIso(dateStr: string, referenceIso?: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const ref = referenceIso ? new Date(referenceIso) : new Date();
+  return new Date(year, month - 1, day, ref.getHours(), ref.getMinutes(), ref.getSeconds()).toISOString();
+}
+
 export default function AddTransactionModal({
   transaction,
   onClose,
@@ -81,7 +90,7 @@ export default function AddTransactionModal({
       const payload: UpdateTransactionPayload = {
         description: description || undefined,
         notes: notes || undefined,
-        occurredAt: new Date(occurredAtStr).toISOString(),
+        occurredAt: toOccurredAtIso(occurredAtStr, transaction.occurred_at),
       };
       if (!isTransferLocked) {
         payload.amount = amount;
@@ -95,7 +104,7 @@ export default function AddTransactionModal({
     const payload: CreateTransactionPayload = {
       type,
       amount,
-      occurredAt: new Date(occurredAtStr).toISOString(),
+      occurredAt: toOccurredAtIso(occurredAtStr),
       notes: notes || undefined,
     };
     if (type === 'TRANSFER') {
