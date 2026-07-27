@@ -16,6 +16,9 @@ const schema = z.object({
   costBasis: z.string().optional(),
   currentValue: z.string().optional(),
   accountNumberMasked: z.string().optional(),
+  interestEnabled: z.boolean().optional(),
+  interestRateAnnual: z.string().optional(),
+  interestTaxRate: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -24,6 +27,13 @@ function toNumber(value: string | undefined): number | undefined {
   if (!value) return undefined;
   const digits = value.replace(/[^0-9]/g, '');
   return digits ? Number(digits) : undefined;
+}
+
+function toDecimal(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const normalized = value.replace(',', '.').replace(/[^0-9.]/g, '');
+  const n = parseFloat(normalized);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 export default function AddAccountModal({ account, onClose }: { account?: Account; onClose: () => void }) {
@@ -46,15 +56,24 @@ export default function AddAccountModal({ account, onClose }: { account?: Accoun
           costBasis: account.cost_basis != null ? String(account.cost_basis) : undefined,
           currentValue: account.current_value != null ? String(account.current_value) : undefined,
           accountNumberMasked: account.account_number_masked ?? undefined,
+          interestEnabled: (account.interest_rate_annual ?? 0) > 0,
+          interestRateAnnual:
+            account.interest_rate_annual != null ? String(account.interest_rate_annual) : undefined,
+          interestTaxRate:
+            account.interest_tax_rate != null ? String(account.interest_tax_rate) : '20',
         }
-      : { type: 'BANK' },
+      : { type: 'BANK', interestEnabled: false, interestTaxRate: '20' },
   });
 
   const selectedType = watch('type');
   const isInvestment = selectedType === 'INVESTMENT';
+  const isBank = selectedType === 'BANK';
   const showAccountNumber = selectedType === 'BANK' || selectedType === 'EWALLET';
+  const interestEnabled = watch('interestEnabled');
 
   const onSubmit = (values: FormValues) => {
+    const bankOn = isBank && values.interestEnabled;
+
     if (isEdit && account) {
       updateAccount.mutate(
         {
@@ -65,6 +84,8 @@ export default function AddAccountModal({ account, onClose }: { account?: Accoun
             costBasis: isInvestment ? toNumber(values.costBasis) : undefined,
             currentValue: isInvestment ? toNumber(values.currentValue) : undefined,
             accountNumberMasked: values.accountNumberMasked || undefined,
+            interestRateAnnual: isBank ? (bankOn ? toDecimal(values.interestRateAnnual) ?? 0 : 0) : undefined,
+            interestTaxRate: isBank ? (bankOn ? toDecimal(values.interestTaxRate) ?? 0 : 0) : undefined,
           },
         },
         { onSuccess: onClose },
@@ -82,6 +103,8 @@ export default function AddAccountModal({ account, onClose }: { account?: Accoun
         costBasis: isInvestment ? toNumber(values.costBasis) : undefined,
         currentValue: isInvestment ? toNumber(values.currentValue) : undefined,
         accountNumberMasked: values.accountNumberMasked || undefined,
+        interestRateAnnual: bankOn ? toDecimal(values.interestRateAnnual) : undefined,
+        interestTaxRate: bankOn ? toDecimal(values.interestTaxRate) : undefined,
       },
       { onSuccess: onClose },
     );
@@ -172,6 +195,75 @@ export default function AddAccountModal({ account, onClose }: { account?: Accoun
                   {...register('currentBalance')}
                 />
               </div>
+            </div>
+          )}
+
+          {isBank && (
+            <div className="p-4 border border-ink-200 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Bunga harian</p>
+                  <p className="text-[11px] text-ink-500">
+                    Dihitung otomatis tiap hari dari saldo kemarin, dicatat sebagai transaksi
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setValue('interestEnabled', !interestEnabled)}
+                  className={`relative w-11 h-6 rounded-full transition flex-shrink-0 ${
+                    interestEnabled ? 'bg-brand-600' : 'bg-ink-300'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition ${
+                      interestEnabled ? 'right-0.5' : 'left-0.5'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {interestEnabled && (
+                <div className="mt-4 pt-4 border-t border-ink-200 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-ink-500 block mb-1.5" htmlFor="interestRateAnnual">
+                        Bunga per tahun (%)
+                      </label>
+                      <div className="flex items-center gap-1 border border-ink-200 rounded-lg px-3 py-2">
+                        <input
+                          id="interestRateAnnual"
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="2.5"
+                          className="text-sm font-medium flex-1 border-0 focus:outline-none focus:ring-0 p-0 bg-transparent w-full"
+                          {...register('interestRateAnnual')}
+                        />
+                        <span className="text-xs text-ink-500">%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-ink-500 block mb-1.5" htmlFor="interestTaxRate">
+                        Pajak bunga (%)
+                      </label>
+                      <div className="flex items-center gap-1 border border-ink-200 rounded-lg px-3 py-2">
+                        <input
+                          id="interestTaxRate"
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="20"
+                          className="text-sm font-medium flex-1 border-0 focus:outline-none focus:ring-0 p-0 bg-transparent w-full"
+                          {...register('interestTaxRate')}
+                        />
+                        <span className="text-xs text-ink-500">%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-ink-400">
+                    Pajak cuma dikenakan di hari saldo akhir kemarin lebih dari Rp 7.500.000. Bunga dan pajak
+                    otomatis masuk sebagai transaksi hari itu juga.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

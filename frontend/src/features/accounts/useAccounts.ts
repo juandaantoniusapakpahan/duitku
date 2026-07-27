@@ -28,6 +28,8 @@ export function useCreateAccount() {
         icon: payload.icon,
         color: payload.color,
         account_number_masked: payload.accountNumberMasked,
+        interest_rate_annual: payload.interestRateAnnual,
+        interest_tax_rate: payload.interestTaxRate,
       });
       return data;
     },
@@ -45,6 +47,8 @@ export function useUpdateAccount() {
         cost_basis: payload.costBasis,
         current_value: payload.currentValue,
         account_number_masked: payload.accountNumberMasked,
+        interest_rate_annual: payload.interestRateAnnual,
+        interest_tax_rate: payload.interestTaxRate,
       });
       return data;
     },

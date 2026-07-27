@@ -45,6 +45,13 @@ public class CategoryService {
         categoryRepository.saveAll(categories);
     }
 
+    public Category getOrCreateSystemCategory(UUID userId, String name, CategoryKind kind, String icon, String color) {
+        return categoryRepository.findByUserIdOrderByCreatedAtAsc(userId).stream()
+                .filter(c -> c.getName().equals(name) && c.getKind() == kind)
+                .findFirst()
+                .orElseGet(() -> categoryRepository.save(new Category(userId, name, kind, icon, color, true)));
+    }
+
     public CategoryResponse get(UUID userId, UUID categoryId) {
         return CategoryResponse.from(findOwned(userId, categoryId));
     }

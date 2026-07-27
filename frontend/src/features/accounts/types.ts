@@ -11,6 +11,8 @@ export interface Account {
   icon: string;
   color: string;
   account_number_masked: string | null;
+  interest_rate_annual: number | null;
+  interest_tax_rate: number | null;
   hidden: boolean;
   created_at: string;
   updated_at: string;
@@ -26,6 +28,8 @@ export interface CreateAccountPayload {
   icon: string;
   color: string;
   accountNumberMasked?: string;
+  interestRateAnnual?: number;
+  interestTaxRate?: number;
 }
 
 export interface UpdateAccountPayload {
@@ -34,4 +38,6 @@ export interface UpdateAccountPayload {
   costBasis?: number;
   currentValue?: number;
   accountNumberMasked?: string;
+  interestRateAnnual?: number;
+  interestTaxRate?: number;
 }

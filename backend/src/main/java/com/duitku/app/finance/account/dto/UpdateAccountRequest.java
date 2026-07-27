@@ -13,6 +13,8 @@ public record UpdateAccountRequest(
         BigDecimal currentValue,
         String icon,
         String color,
-        String accountNumberMasked
+        String accountNumberMasked,
+        BigDecimal interestRateAnnual,
+        BigDecimal interestTaxRate
 ) {
 }

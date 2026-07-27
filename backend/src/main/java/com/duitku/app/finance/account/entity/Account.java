@@ -45,6 +45,12 @@ public class Account {
     @Column(name = "account_number_masked")
     private String accountNumberMasked;
 
+    @Column(name = "interest_rate_annual")
+    private BigDecimal interestRateAnnual;
+
+    @Column(name = "interest_tax_rate")
+    private BigDecimal interestTaxRate;
+
     @Column(name = "is_hidden", nullable = false)
     private boolean hidden = false;
 
@@ -108,6 +114,10 @@ public class Account {
     public void setColor(String color) { this.color = color; }
     public String getAccountNumberMasked() { return accountNumberMasked; }
     public void setAccountNumberMasked(String accountNumberMasked) { this.accountNumberMasked = accountNumberMasked; }
+    public BigDecimal getInterestRateAnnual() { return interestRateAnnual; }
+    public void setInterestRateAnnual(BigDecimal interestRateAnnual) { this.interestRateAnnual = interestRateAnnual; }
+    public BigDecimal getInterestTaxRate() { return interestTaxRate; }
+    public void setInterestTaxRate(BigDecimal interestTaxRate) { this.interestTaxRate = interestTaxRate; }
     public boolean isHidden() { return hidden; }
     public boolean isDeleted() { return deleted; }
     public Instant getCreatedAt() { return createdAt; }

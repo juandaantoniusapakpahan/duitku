@@ -18,6 +18,8 @@ public record AccountResponse(
         String icon,
         String color,
         String accountNumberMasked,
+        BigDecimal interestRateAnnual,
+        BigDecimal interestTaxRate,
         boolean hidden,
         Instant createdAt,
         Instant updatedAt
@@ -28,6 +30,7 @@ public record AccountResponse(
                 account.getCurrentBalance(), account.getCurrency(),
                 account.getCostBasis(), account.getCurrentValue(),
                 account.getIcon(), account.getColor(), account.getAccountNumberMasked(),
+                account.getInterestRateAnnual(), account.getInterestTaxRate(),
                 account.isHidden(), account.getCreatedAt(), account.getUpdatedAt());
     }
 }

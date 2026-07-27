@@ -43,6 +43,10 @@ public class AccountService {
         account.setCostBasis(request.costBasis());
         account.setCurrentValue(request.currentValue());
         account.setAccountNumberMasked(request.accountNumberMasked());
+        if (request.type() == AccountType.BANK) {
+            account.setInterestRateAnnual(request.interestRateAnnual());
+            account.setInterestTaxRate(request.interestTaxRate());
+        }
         return AccountResponse.from(accountRepository.save(account));
     }
 
@@ -57,6 +61,10 @@ public class AccountService {
         if (request.icon() != null) account.setIcon(request.icon());
         if (request.color() != null) account.setColor(request.color());
         if (request.accountNumberMasked() != null) account.setAccountNumberMasked(request.accountNumberMasked());
+        if (account.getType() == AccountType.BANK) {
+            if (request.interestRateAnnual() != null) account.setInterestRateAnnual(request.interestRateAnnual());
+            if (request.interestTaxRate() != null) account.setInterestTaxRate(request.interestTaxRate());
+        }
         return AccountResponse.from(accountRepository.save(account));
     }
 

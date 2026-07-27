@@ -15,6 +15,8 @@ public record CreateAccountRequest(
         BigDecimal currentValue,
         @NotBlank String icon,
         @NotBlank String color,
-        String accountNumberMasked
+        String accountNumberMasked,
+        BigDecimal interestRateAnnual,
+        BigDecimal interestTaxRate
 ) {
 }
